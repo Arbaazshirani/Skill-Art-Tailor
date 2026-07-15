@@ -40,7 +40,7 @@
             animation: pulse-green 1.5s infinite;
         }
         @keyframes pulse-green {
-            0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.7); }
+            0 { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.7); }
             70% { transform: scale(1); box-shadow: 0 0 0 5px rgba(34, 197, 94, 0); }
             100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(34, 197, 94, 0); }
         }
@@ -49,7 +49,7 @@
         .garment-card { 
             transition: all 0.2s ease; 
             cursor: pointer; 
-            border: 2px solid #e2e8f0; 
+            border: 1px solid #e2e8f0; 
         }
         .garment-card.selected { 
             border-color: #22c55e; 
@@ -71,6 +71,7 @@
 
         .custom-scroll::-webkit-scrollbar {
             width: 6px;
+            height: 6px;
         }
         .custom-scroll::-webkit-scrollbar-track {
             background: #f1f1f1;
@@ -86,6 +87,14 @@
             backdrop-filter: blur(4px);
         }
 
+        /* Active highlight for handwriting mode fields */
+        .active-field-highlight {
+            border-bottom: 2.5px solid #d97706 !important;
+            background-color: #fef3c7 !important;
+            border-radius: 4px 4px 0 0;
+            transition: all 0.2s ease;
+        }
+
         @media print { 
             .no-print { display: none !important; } 
             .print-layout { display: block !important; height: auto !important; overflow: visible !important; }
@@ -95,143 +104,173 @@
 <body class="overflow-hidden h-screen flex flex-col">
 
     <!-- Header (Hidden during Print) -->
-    <header class="no-print bg-white border-b h-14 flex items-center justify-between px-6 z-50 shadow-sm shrink-0">
-        <div class="flex items-center gap-4">
-            <div class="w-8 h-8 bg-amber-800 rounded-lg flex items-center justify-center text-white text-base font-bold">RT</div>
+    <header class="no-print bg-white border-b h-12 flex items-center justify-between px-4 z-50 shadow-sm shrink-0">
+        <div class="flex items-center gap-2">
+            <div class="w-7 h-7 bg-amber-800 rounded-lg flex items-center justify-center text-white text-xs font-bold">RT</div>
             <div>
-                <h1 class="text-sm font-bold tracking-tight text-amber-900 uppercase leading-none">Royal Tailor</h1>
-                <span class="text-[8px] uppercase tracking-widest text-gray-400" id="header-sub">Digital Billing System</span>
+                <h1 class="text-xs font-extrabold tracking-tight text-amber-900 uppercase leading-none">Royal Tailor</h1>
+                <span class="text-[7px] uppercase tracking-widest text-gray-400" id="header-sub">Digital Billing System</span>
             </div>
         </div>
 
-        <!-- Language Selector (English Default) -->
-        <div class="flex bg-gray-100 p-0.5 rounded-lg border border-gray-200">
-            <input type="radio" name="lang" id="lang-en" value="en" class="lang-radio hidden" checked onchange="changeLang('en')">
-            <label for="lang-en" class="px-3 py-1 text-[10px] font-bold cursor-pointer rounded-md transition-all">English</label>
-            <input type="radio" name="lang" id="lang-hi" value="hi" class="lang-radio hidden" onchange="changeLang('hi')">
-            <label for="lang-hi" class="px-3 py-1 text-[10px] font-bold cursor-pointer rounded-md transition-all">हिन्दी</label>
-        </div>
-
-        <div class="flex gap-2">
-            <button onclick="switchTab('billing')" class="nav-tab active px-3 py-1 rounded-md text-[10px] font-bold border transition-all" id="nav-bill">New Bill</button>
-            <button onclick="switchTab('dashboard')" class="nav-tab px-3 py-1 rounded-md text-[10px] font-bold border transition-all" id="nav-dash">Dashboard</button>
+        <div class="flex gap-2 items-center">
+            <button onclick="switchTab('billing')" class="nav-tab active px-2.5 py-0.5 rounded text-[9px] font-bold border transition-all" id="nav-bill">New Bill</button>
+            <button onclick="switchTab('dashboard')" class="nav-tab px-2.5 py-0.5 rounded text-[9px] font-bold border transition-all" id="nav-dash">Dashboard</button>
         </div>
     </header>
 
-    <!-- MAIN WORKSPACE CONTAINER -->
-    <main class="flex-1 flex flex-col p-3 gap-3 overflow-hidden bg-[#fcfaf7] print-layout">
+    <!-- MAIN WORKSPACE CONTAINER (Unified Fixed Screen per Untitled2.png) -->
+    <main class="flex-1 flex p-2 gap-2 overflow-hidden bg-[#fcfaf7] print-layout">
         
         <!-- BILLING SECTION (Tab Content) -->
-        <div id="tab-billing" class="tab-content flex-1 flex flex-col gap-2.5 overflow-hidden">
+        <div id="tab-billing" class="tab-content flex-1 flex gap-2 overflow-hidden">
             
-            <!-- Global Search Bar at top center -->
-            <div class="relative max-w-lg mx-auto w-full no-print">
-                <input type="text" id="globalSearch" class="w-full bg-white border border-gray-200 rounded-full py-1.5 px-8 shadow-sm focus:ring-2 focus:ring-amber-500 outline-none text-xs" placeholder="Search customer records...">
-                <span class="absolute left-3 top-2 text-xs opacity-30">🔍</span>
-            </div>
-
-            <!-- Customer Details (Horizontal Strip per Untitled.png) -->
-            <div class="bg-white p-3.5 rounded-2xl shadow-sm border border-gray-100 no-print shrink-0">
-                <h2 class="text-xs font-bold text-gray-800 flex items-center gap-2 mb-2" id="title-part1">Customer Details</h2>
-                <div class="grid grid-cols-4 gap-4">
-                    <!-- Full Name Field -->
-                    <div class="space-y-0.5">
-                        <label class="text-[8px] font-bold text-gray-400 uppercase tracking-wider" id="label-name">Full Name</label>
-                        <div class="relative flex items-center">
-                            <input type="text" id="custName" class="w-full border-b border-gray-200 py-0.5 pr-10 focus:border-amber-500 outline-none font-semibold text-xs" placeholder="Enter Name">
-                            <div class="absolute right-0 flex items-center gap-1">
-                                <button id="mic-custName" onclick="startVoiceInput('custName')" class="text-gray-400 hover:text-amber-800 transition-colors text-xs p-1" title="Voice Input">🎙️</button>
-                                <button onclick="clearField('custName')" class="text-gray-300 hover:text-red-500 transition-colors text-[10px] p-1 font-bold" title="Erase">❌</button>
-                            </div>
-                        </div>
-                    </div>
-                    <!-- Mobile Number Field -->
-                    <div class="space-y-0.5">
-                        <label class="text-[8px] font-bold text-gray-400 uppercase tracking-wider" id="label-mobile">Mobile Number</label>
-                        <div class="relative flex items-center">
-                            <input type="tel" id="custMobile" class="w-full border-b border-gray-200 py-0.5 pr-10 outline-none font-mono font-bold text-xs" placeholder="Numeric Pad">
-                            <div class="absolute right-0 flex items-center gap-1">
-                                <button id="mic-custMobile" onclick="startVoiceInput('custMobile')" class="text-gray-400 hover:text-amber-800 transition-colors text-xs p-1" title="Voice Input">🎙️</button>
-                                <button onclick="clearField('custMobile')" class="text-gray-300 hover:text-red-500 transition-colors text-[10px] p-1 font-bold" title="Erase">❌</button>
-                            </div>
-                        </div>
-                    </div>
-                    <!-- Email Address Field -->
-                    <div class="space-y-0.5">
-                        <label class="text-[8px] font-bold text-gray-400 uppercase tracking-wider" id="label-email">Email Address</label>
-                        <div class="relative flex items-center">
-                            <input type="email" id="custEmail" class="w-full border-b border-gray-200 py-0.5 pr-10 outline-none text-xs" placeholder="example@mail.com">
-                            <div class="absolute right-0 flex items-center gap-1">
-                                <button id="mic-custEmail" onclick="startVoiceInput('custEmail')" class="text-gray-400 hover:text-amber-800 transition-colors text-xs p-1" title="Voice Input">🎙️</button>
-                                <button onclick="clearField('custEmail')" class="text-gray-300 hover:text-red-500 transition-colors text-[10px] p-1 font-bold" title="Erase">❌</button>
-                            </div>
-                        </div>
-                    </div>
-                    <!-- Address Field -->
-                    <div class="space-y-0.5">
-                        <label class="text-[8px] font-bold text-gray-400 uppercase tracking-wider" id="label-address">Address</label>
-                        <div class="relative flex items-center">
-                            <input type="text" id="custAddress" class="w-full border-b border-gray-200 py-0.5 pr-10 outline-none text-xs" placeholder="City/Area">
-                            <div class="absolute right-0 flex items-center gap-1">
-                                <button id="mic-custAddress" onclick="startVoiceInput('custAddress')" class="text-gray-400 hover:text-amber-800 transition-colors text-xs p-1" title="Voice Input">🎙️</button>
-                                <button onclick="clearField('custAddress')" class="text-gray-300 hover:text-red-500 transition-colors text-[10px] p-1 font-bold" title="Erase">❌</button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- SPLIT SCREEN LAYOUT (Untitled.png Alignment) -->
-            <div class="flex-1 grid grid-cols-12 gap-3 overflow-hidden min-h-0">
-                
-                <!-- Measurement Note Pad (Left Side - 8 Cols) -->
-                <div id="notepad-section" class="col-span-8 bg-white p-3 rounded-2xl shadow-sm border border-gray-100 flex flex-col h-full overflow-hidden">
-                    <div class="flex justify-between items-center mb-2 shrink-0">
-                        <h2 class="text-xs font-bold text-gray-800" id="label-notes">Measurement Note Pad</h2>
-                        
-                        <!-- Drawing Toolbar (Pen, Eraser, Undo, Redo, Clear) -->
-                        <div class="flex items-center gap-1 bg-gray-100 p-0.5 rounded-lg border border-gray-200">
-                            <button id="tool-pen" onclick="setTool('pen')" class="p-1 px-2 rounded text-[10px] font-bold bg-amber-800 text-white shadow-sm transition-all" title="Pen">
-                                ✏️ Pen
-                            </button>
-                            <button id="tool-eraser" onclick="setTool('eraser')" class="p-1 px-2 rounded text-[10px] font-bold hover:bg-white text-gray-600 transition-all" title="Eraser">
-                                🧽 Eraser
-                            </button>
-                            <div class="w-px h-4 bg-gray-300 mx-1"></div>
-                            <button onclick="undo()" class="p-1 px-1.5 rounded text-[10px] hover:bg-white text-gray-600 transition-all" title="Undo">
-                                ↩️ Undo
-                            </button>
-                            <button onclick="redo()" class="p-1 px-1.5 rounded text-[10px] hover:bg-white text-gray-600 transition-all" title="Redo">
-                                ↪️ Redo
-                            </button>
-                        </div>
-
-                        <button onclick="clearCanvas()" class="px-2.5 py-0.5 text-[9px] font-bold text-red-500 border border-red-100 rounded-md hover:bg-red-50" id="btn-clear-all">Clear All</button>
-                    </div>
-
-                    <!-- Yellow Lined Paper Stylus Canvas -->
-                    <div class="flex-1 border border-amber-100 rounded-xl overflow-hidden shadow-inner bg-[#fffef0] relative min-h-0">
-                        <canvas id="measCanvas" class="handwriting-pad w-full h-full"></canvas>
-                    </div>
-                </div>
-
-                <!-- Garment Selection & Controls (Right Side - 4 Cols) -->
-                <div class="col-span-4 bg-white p-3 rounded-2xl shadow-sm border border-gray-100 flex flex-col h-full overflow-hidden no-print">
-                    <h2 class="text-xs font-bold text-gray-800 mb-2 shrink-0" id="title-part2">Select Garments</h2>
+            <!-- LEFT COLUMN: Customer Details (approx 25% Width as per Untitled2.png) -->
+            <div class="w-[28%] bg-white p-3 rounded-xl shadow-sm border border-gray-100 flex flex-col justify-between shrink-0 h-full overflow-hidden no-print">
+                <div class="space-y-3 flex-1 overflow-y-auto custom-scroll pr-1">
                     
-                    <!-- Garment Cards Grid -->
-                    <div class="flex-1 overflow-y-auto custom-scroll pr-0.5 gap-2 grid grid-cols-2 min-h-0 content-start" id="garment-grid">
+                    <!-- Branding Header with Language Selection inside (Untitled2.png style) -->
+                    <div class="flex justify-between items-start mb-2 border-b pb-2">
+                        <div>
+                            <h2 class="text-base font-extrabold text-amber-900 uppercase tracking-tight leading-tight">ROYAL TAILOR</h2>
+                            <p class="text-[8px] uppercase tracking-wider text-gray-400 font-semibold">DIGITAL BILLING SYSTEM</p>
+                        </div>
+                        <!-- Language Selector (Compact pill) -->
+                        <div class="flex bg-gray-100 p-0.5 rounded-md border border-gray-200">
+                            <input type="radio" name="lang" id="lang-en" value="en" class="lang-radio hidden" checked onchange="changeLang('en')">
+                            <label for="lang-en" class="px-2 py-0.5 text-[8px] font-bold cursor-pointer rounded transition-all">English</label>
+                            <input type="radio" name="lang" id="lang-hi" value="hi" class="lang-radio hidden" onchange="changeLang('hi')">
+                            <label for="lang-hi" class="px-2 py-0.5 text-[8px] font-bold cursor-pointer rounded transition-all">हिन्दी</label>
+                        </div>
+                    </div>
+
+                    <!-- Compact Search Bar -->
+                    <div class="relative w-full">
+                        <input type="text" id="globalSearch" class="w-full bg-gray-50 border border-gray-200 rounded-lg py-1 px-7 text-[10px] focus:ring-1 focus:ring-amber-500 outline-none" placeholder="Search customer records...">
+                        <span class="absolute left-2.5 top-1.5 text-[9px] opacity-40">🔍</span>
+                    </div>
+
+                    <!-- Customer Fields Panel -->
+                    <div class="space-y-4">
+                        <div class="flex justify-between items-center">
+                            <h3 class="text-[11px] font-extrabold text-gray-800 uppercase tracking-wider" id="title-part1">Customer Details</h3>
+                            <span class="text-[8px] text-amber-800 bg-amber-50 px-1.5 py-0.5 rounded font-bold border border-amber-100">✍️ Smart Pad Active</span>
+                        </div>
+                        
+                        <!-- Full Name Field -->
+                        <div class="space-y-0.5 input-container cursor-pointer group" onclick="focusField('custName')">
+                            <label class="text-[7.5px] font-bold text-gray-400 uppercase tracking-wider block" id="label-name">Full Name</label>
+                            <div class="relative flex items-center">
+                                <input type="text" id="custName" class="w-full border-b border-gray-200 py-1 pr-14 focus:border-amber-500 outline-none font-bold text-[11px] bg-transparent" placeholder="Enter Name" readonly>
+                                <div class="absolute right-0 flex items-center gap-0.5" onclick="event.stopPropagation()">
+                                    <button id="mic-custName" onclick="startVoiceInput('custName')" class="text-gray-400 hover:text-amber-800 transition-colors text-[10px] p-1" title="Voice Input">🎙️</button>
+                                    <button onclick="clearField('custName')" class="text-gray-300 hover:text-red-500 transition-colors text-[9px] p-1 font-bold" title="Erase">❌</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Mobile Number Field -->
+                        <div class="space-y-0.5 input-container cursor-pointer group" onclick="focusField('custMobile')">
+                            <label class="text-[7.5px] font-bold text-gray-400 uppercase tracking-wider block" id="label-mobile">Mobile Number</label>
+                            <div class="relative flex items-center">
+                                <input type="tel" id="custMobile" class="w-full border-b border-gray-200 py-1 pr-14 outline-none font-mono font-bold text-[11px] bg-transparent" placeholder="Numeric Pad" readonly>
+                                <div class="absolute right-0 flex items-center gap-0.5" onclick="event.stopPropagation()">
+                                    <button id="mic-custMobile" onclick="startVoiceInput('custMobile')" class="text-gray-400 hover:text-amber-800 transition-colors text-[10px] p-1" title="Voice Input">🎙️</button>
+                                    <button onclick="clearField('custMobile')" class="text-gray-300 hover:text-red-500 transition-colors text-[9px] p-1 font-bold" title="Erase">❌</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Address Field -->
+                        <div class="space-y-0.5 input-container cursor-pointer group" onclick="focusField('custAddress')">
+                            <label class="text-[7.5px] font-bold text-gray-400 uppercase tracking-wider block" id="label-address">Address</label>
+                            <div class="relative flex items-center">
+                                <input type="text" id="custAddress" class="w-full border-b border-gray-200 py-1 pr-14 outline-none text-[11px] font-bold bg-transparent" placeholder="City/Area" readonly>
+                                <div class="absolute right-0 flex items-center gap-0.5" onclick="event.stopPropagation()">
+                                    <button id="mic-custAddress" onclick="startVoiceInput('custAddress')" class="text-gray-400 hover:text-amber-800 transition-colors text-[10px] p-1" title="Voice Input">🎙️</button>
+                                    <button onclick="clearField('custAddress')" class="text-gray-300 hover:text-red-500 transition-colors text-[9px] p-1 font-bold" title="Erase">❌</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Tip Box for Tablet Handwriting -->
+                        <div class="p-2 bg-amber-50 rounded-lg border border-amber-100 text-[8px] text-amber-900 leading-normal" id="handwriting-notice">
+                            <strong>How to fill:</strong> Tap on any input box, scribble/write the text clearly on the <strong>Note Pad</strong> on the right, and then tap <strong>"OK ✔"</strong> to auto-fill!
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Footer Status (Static billing control) -->
+                <div class="border-t pt-2 mt-2 flex flex-col gap-1 shrink-0">
+                    <button onclick="previewInvoice()" class="w-full bg-amber-800 hover:bg-amber-900 text-white py-1 rounded-lg font-bold text-[10px] shadow-sm transition-all" id="btn-submit">
+                        Preview & Save Bill
+                    </button>
+                </div>
+            </div>
+
+            <!-- RIGHT COLUMN: Garment Selection & Note Pad (approx 72% Width) -->
+            <div class="w-[72%] flex flex-col gap-2 h-full overflow-hidden">
+                
+                <!-- TOP BLOCK: Select Garments (Horizontal Row as per Untitled2.png) -->
+                <div class="bg-white p-2.5 rounded-xl shadow-sm border border-gray-100 shrink-0 no-print">
+                    <h2 class="text-[10px] font-bold text-gray-700 mb-1" id="title-part2">Select Garments</h2>
+                    
+                    <!-- Horizontal Scrolling Cards container -->
+                    <div class="flex gap-2 overflow-x-auto pb-1 custom-scroll" id="garment-grid">
                         <!-- Injected dynamically via JS -->
                     </div>
+                </div>
 
-                    <!-- Action Panel Bottom Buttons -->
-                    <div class="mt-2.5 pt-2 border-t flex flex-col gap-1.5 shrink-0">
-                        <button onclick="goToMeasurements()" class="w-full bg-amber-800 hover:bg-amber-900 text-white py-1.5 rounded-lg font-bold flex items-center justify-center gap-1.5 shadow-sm active:scale-95 transition-all text-xs">
-                            <span id="btn-go-to-pad">Start Measuring</span> ✍️
-                        </button>
-                        <button onclick="previewInvoice()" class="w-full bg-emerald-700 hover:bg-emerald-800 text-white py-1.5 rounded-lg font-bold text-xs shadow-sm active:scale-95 transition-all" id="btn-submit">
-                            Preview & Save Bill
-                        </button>
+                <!-- BOTTOM BLOCK: Stylus Measurement Note Pad (Large view per Untitled2.png) -->
+                <div id="notepad-section" class="flex-1 bg-white p-3 rounded-xl shadow-sm border border-gray-100 flex flex-col overflow-hidden min-h-0">
+                    <div class="flex justify-between items-center mb-1.5 shrink-0">
+                        <div class="flex items-center gap-2">
+                            <h2 class="text-xs font-bold text-gray-800" id="label-notes">Measurement Note Pad</h2>
+                            <!-- Realtime Field Focus Indicator -->
+                            <span id="active-canvas-indicator" class="hidden text-[8px] bg-amber-600 text-white font-bold px-2 py-0.5 rounded-full animate-pulse">
+                                Editing Field: None
+                            </span>
+                        </div>
+                        
+                        <!-- Interactive Toolbar Pill (Design matched to Untitled2.png) -->
+                        <div class="flex items-center gap-1.5">
+                            <div class="flex items-center bg-gray-100 p-0.5 rounded-md border border-gray-200">
+                                <button id="tool-pen" onclick="setTool('pen')" class="px-2 py-0.5 rounded text-[8.5px] font-bold bg-amber-800 text-white shadow-sm transition-all" title="Pen">
+                                    ✏️ Pen
+                                </button>
+                                <button id="tool-eraser" onclick="setTool('eraser')" class="px-2 py-0.5 rounded text-[8.5px] font-bold hover:bg-white text-gray-600 transition-all" title="Eraser">
+                                    🧽 Eraser
+                                </button>
+                                <div class="w-px h-3 bg-gray-300 mx-0.5"></div>
+                                <button onclick="undo()" class="px-1.5 py-0.5 rounded text-[8px] hover:bg-white text-gray-600 transition-all font-semibold" title="Undo">
+                                    ↩️ Undo
+                                </button>
+                                <button onclick="redo()" class="px-1.5 py-0.5 rounded text-[8px] hover:bg-white text-gray-600 transition-all font-semibold" title="Redo">
+                                    ↪️ Redo
+                                </button>
+                            </div>
+
+                            <!-- SPECIAL DYNAMIC OK BUTTON (ONLY visible during customer data input) -->
+                            <button id="btn-hwr-ok" onclick="convertScribbleToText()" class="hidden px-3.5 py-0.5 rounded-md text-[9px] font-bold bg-emerald-600 hover:bg-emerald-700 text-white shadow-md active:scale-95 transition-all flex items-center gap-1">
+                                OK ✔
+                            </button>
+
+                            <!-- Start Measuring Trigger -->
+                            <button onclick="goToMeasurements()" class="px-3.5 py-0.5 bg-amber-800 hover:bg-amber-900 text-white rounded-md font-bold text-[9px] shadow active:scale-95 transition-all flex items-center gap-1" id="btn-go-to-pad-container">
+                                <span id="btn-go-to-pad">Start Measuring</span> ✍️
+                            </button>
+
+                            <button onclick="clearCanvas()" class="px-2 py-0.5 text-[8px] font-bold text-red-500 border border-red-100 rounded-md hover:bg-red-50" id="btn-clear-all">Clear All</button>
+                        </div>
+                    </div>
+
+                    <!-- Yellow Lined Stylus Notebook Canvas Area -->
+                    <div class="flex-1 border border-amber-100 rounded-lg overflow-hidden shadow-inner bg-[#fffef0] relative min-h-0">
+                        <!-- Instructions screen for handwriting overlay -->
+                        <div id="hwr-instruction-overlay" class="hidden absolute inset-0 bg-amber-900/5 backdrop-blur-[0.5px] pointer-events-none flex items-center justify-center">
+                            <span class="text-[10px] text-amber-900/60 font-semibold tracking-wider bg-white/95 px-3 py-1 rounded-full border border-amber-100 shadow-sm">✍️ Write with Stylus below...</span>
+                        </div>
+                        <canvas id="measCanvas" class="handwriting-pad w-full h-full"></canvas>
                     </div>
                 </div>
 
@@ -327,12 +366,13 @@
         </div>
     </div>
 
+    <!-- SCRIPT LOGIC -->
     <script>
         const i18n = {
             hi: {
                 navBill: "नया बिल", navDash: "डैशबोर्ड", titlePart1: "ग्राहक विवरण",
                 titlePart2: "कपड़े चुनें", labelName: "ग्राहक का नाम", labelMobile: "मोबाइल नंबर",
-                labelEmail: "ईमेल एड्रेस", labelAddress: "पता", labelNotes: "माप नोटपैड (Stylus)",
+                labelAddress: "पता", labelNotes: "माप नोटपैड (Stylus)",
                 btnSubmit: "बिल समरी देखें", headerSub: "डिजिटल रिकॉर्ड",
                 searchPlaceholder: "ग्राहक खोजें...", btnGoToPad: "माप शुरू करें",
                 dashPricing: "रेट मैनेजमेंट", dashStats: "मूल्य वितरण",
@@ -341,7 +381,7 @@
             en: {
                 navBill: "New Bill", navDash: "Dashboard", titlePart1: "Customer Details",
                 titlePart2: "Select Garments", labelName: "Full Name", labelMobile: "Mobile Number",
-                labelEmail: "Email Address", labelAddress: "Address", labelNotes: "Measurement Note Pad",
+                labelAddress: "Address", labelNotes: "Measurement Note Pad",
                 btnSubmit: "Preview & Save Bill", headerSub: "Digital Billing System",
                 searchPlaceholder: "Search customer records...", btnGoToPad: "Start Measuring",
                 dashPricing: "Pricing Management", dashStats: "Stitch Price Stats",
@@ -357,7 +397,7 @@
         let chartInstance = null;
         let billNumber = 1001;
 
-        // Tool & Drawing States (Advanced correction feature)
+        // Tool & Drawing States
         let drawing = false;
         let canvas, ctx;
         let activeTool = 'pen'; // 'pen' or 'eraser'
@@ -367,6 +407,16 @@
         let redoStack = [];
         const maxStates = 20;
 
+        // Active Column for Handwriting Scribble-to-Text
+        let activeFieldId = null;
+
+        // Stroke tracking variables for Google Handwriting API
+        let currentStrokeX = [];
+        let currentStrokeY = [];
+        let currentStrokeT = [];
+        let inkData = []; // Array of [[[X...], [Y...], [T...]], ...]
+        let strokeStartTime = 0;
+
         window.onload = () => {
             garments.forEach(g => quantities[g] = 0);
             
@@ -374,11 +424,11 @@
             renderPricingDashboard();
             initCanvas();
             initChart();
-            changeLang('en'); // Defaults English
+            changeLang('en'); // Defaults to English
             
             window.addEventListener('resize', handleCanvasResize);
 
-            // Save initial blank state for undo capability
+            // Save initial blank state
             if (canvas) {
                 undoStack.push(canvas.toDataURL());
             }
@@ -402,7 +452,6 @@
             document.getElementById('title-part2').innerText = t.titlePart2;
             document.getElementById('label-name').innerText = t.labelName;
             document.getElementById('label-mobile').innerText = t.labelMobile;
-            document.getElementById('label-email').innerText = t.labelEmail;
             document.getElementById('label-address').innerText = t.labelAddress;
             document.getElementById('label-notes').innerText = t.labelNotes;
             document.getElementById('btn-go-to-pad').innerText = t.btnGoToPad;
@@ -418,13 +467,17 @@
         // Fast Clear (❌) field handler
         function clearField(fieldId) {
             document.getElementById(fieldId).value = '';
+            // If the field cleared is the active one, clear canvas and reset ink arrays
+            if (activeFieldId === fieldId) {
+                clearCanvas();
+            }
         }
 
         // Speech-to-Text Feature (Hands-free Voice Input)
         function startVoiceInput(fieldId) {
             const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
             if (!SpeechRecognition) {
-                alert("Voice typing is only supported in Android Chrome/Brave. Please use active tablet browser.");
+                showToast("Voice typing is only supported in Android Chrome.");
                 return;
             }
 
@@ -434,7 +487,6 @@
             recognition.maxAlternatives = 1;
 
             const micBtn = document.getElementById(`mic-${fieldId}`);
-            // Visual feedback: animate mic
             micBtn.classList.add('animate-pulse', 'text-red-500');
 
             recognition.start();
@@ -444,7 +496,6 @@
                 const field = document.getElementById(fieldId);
                 
                 if (fieldId === 'custMobile') {
-                    // Clean numbers for phone field
                     const cleanedNum = speechResult.replace(/\D/g, '');
                     field.value = cleanedNum;
                 } else {
@@ -461,18 +512,152 @@
             };
         }
 
+        // FOCUS CUSTOMER FIELDS TO START HANDWRITING
+        function focusField(fieldId) {
+            // Remove previous active highlights
+            document.querySelectorAll('.input-container').forEach(el => {
+                el.classList.remove('active-field-highlight');
+            });
+
+            // If we clicked on the already active field, toggle it off
+            if (activeFieldId === fieldId) {
+                deactivateField();
+                return;
+            }
+
+            activeFieldId = fieldId;
+            
+            // Highlight the active container
+            const container = document.getElementById(fieldId).closest('.input-container');
+            container.classList.add('active-field-highlight');
+
+            // Set canvas visual guides
+            document.getElementById('active-canvas-indicator').classList.remove('hidden');
+            const friendlyName = document.getElementById(fieldId).previousElementSibling.innerText;
+            document.getElementById('active-canvas-indicator').innerText = `Smart Fill Active: ${friendlyName}`;
+
+            // Show instructional HWR overlay
+            document.getElementById('hwr-instruction-overlay').classList.remove('hidden');
+
+            // Show OK button inside drawing toolbar, hide Start Measuring to focus detail typing
+            document.getElementById('btn-hwr-ok').classList.remove('hidden');
+            document.getElementById('btn-go-to-pad-container').classList.add('hidden');
+
+            // Reset local strokes for fresh recognition
+            inkData = [];
+            clearCanvas();
+        }
+
+        function deactivateField() {
+            document.querySelectorAll('.input-container').forEach(el => {
+                el.classList.remove('active-field-highlight');
+            });
+            activeFieldId = null;
+            document.getElementById('active-canvas-indicator').classList.add('hidden');
+            document.getElementById('hwr-instruction-overlay').classList.add('hidden');
+            document.getElementById('btn-hwr-ok').classList.add('hidden');
+            document.getElementById('btn-go-to-pad-container').classList.remove('hidden');
+            inkData = [];
+            clearCanvas();
+        }
+
+        // GOOGLE IME HANDWRITING API RECOGNITION (Teaching Digital Board auto-correct mechanism)
+        function convertScribbleToText() {
+            if (!activeFieldId || inkData.length === 0) {
+                showToast("Please write clearly on the notepad first!");
+                return;
+            }
+
+            const fieldToFill = document.getElementById(activeFieldId);
+            fieldToFill.placeholder = "Recognizing... ⏳";
+
+            // Determine language code for IME
+            let languageCode = "en";
+            if (currentLang === "hi") {
+                languageCode = "hi";
+            }
+
+            // Build request parameters matching Google IME Web handwriting specification
+            const url = `https://inputtools.google.com/request?itc=${languageCode}-t-i0-handwrit&app=demopage`;
+
+            const payload = {
+                app_version: 0.4,
+                api_level: "53.0.3220.0",
+                device: "5.0",
+                input_type: "0",
+                options: "enable_pre_space",
+                requests: [
+                    {
+                        writing_guide: {
+                            width: canvas.width,
+                            height: canvas.height
+                        },
+                        pre_context: "",
+                        max_num_results: 3,
+                        max_completions: 0,
+                        language: languageCode,
+                        ink: inkData
+                    }
+                ]
+            };
+
+            // Call Handwriting IME Web API
+            fetch(url, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(payload)
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data && data[0] === "SUCCESS") {
+                    const candidateList = data[1][0][1];
+                    if (candidateList && candidateList.length > 0) {
+                        let recognizedText = candidateList[0];
+                        
+                        // Numeric auto-correct constraint for mobile phone input
+                        if (activeFieldId === 'custMobile') {
+                            recognizedText = recognizedText.replace(/\D/g, ''); // strip non-numeric
+                        }
+
+                        fieldToFill.value = recognizedText;
+                    } else {
+                        showToast("Could not recognize text. Please write again.");
+                    }
+                } else {
+                    showToast("Server error. Try Voice typing!");
+                }
+                resetRecognitionPlaceholder();
+                deactivateField();
+            })
+            .catch(err => {
+                console.error("Handwriting API Error: ", err);
+                showToast("Connection issue. Please use Mic (🎙️) or touch keyboards!");
+                resetRecognitionPlaceholder();
+                deactivateField();
+            });
+        }
+
+        function resetRecognitionPlaceholder() {
+            document.getElementById('custName').placeholder = "Enter Name";
+            document.getElementById('custMobile').placeholder = "Numeric Pad";
+            document.getElementById('custAddress').placeholder = "City/Area";
+        }
+
         function renderGarments() {
             const grid = document.getElementById('garment-grid');
+            // Styled as horizontal scrolling compact list matching Untitled2.png view
             grid.innerHTML = garments.map(item => `
-                <div id="card-${item}" onclick="toggleSelection('${item}')" class="garment-card p-2 rounded-xl bg-white flex flex-col justify-between h-20 shadow-sm relative select-none ${selectedGarments.has(item) ? 'selected' : ''}">
-                    <div class="flex justify-between items-start">
-                        <span class="text-[10px] font-bold text-gray-700 leading-tight">${item}</span>
-                        ${selectedGarments.has(item) ? '<span class="green-dot"></span>' : '<span class="w-2 h-2 border rounded-full border-gray-200"></span>'}
+                <div id="card-${item}" onclick="toggleSelection('${item}')" class="garment-card p-1.5 px-3 rounded-lg bg-white flex flex-col justify-between w-32 shrink-0 shadow-sm relative select-none ${selectedGarments.has(item) ? 'selected' : ''}">
+                    <div class="flex justify-between items-start gap-1">
+                        <span class="text-[9px] font-bold text-gray-700 leading-tight">${item}</span>
+                        ${selectedGarments.has(item) ? '<span class="green-dot shrink-0"></span>' : '<span class="w-1.5 h-1.5 border rounded-full border-gray-200 shrink-0"></span>'}
                     </div>
-                    <div class="flex items-center justify-between bg-gray-50 rounded-lg p-0.5" onclick="event.stopPropagation()">
-                        <button onclick="updateQty('${item}', -1)" class="w-5 h-5 rounded bg-white shadow-sm flex items-center justify-center font-bold text-gray-400 hover:text-amber-800 transition-colors text-[10px]">-</button>
-                        <span class="font-mono font-bold text-amber-900 text-[10px]">${quantities[item]}</span>
-                        <button onclick="updateQty('${item}', 1)" class="w-5 h-5 rounded bg-white shadow-sm flex items-center justify-center font-bold text-gray-400 hover:text-amber-800 transition-colors text-[10px]">+</button>
+                    <div class="flex items-center justify-between bg-gray-50 rounded p-0.5 mt-1" onclick="event.stopPropagation()">
+                        <button onclick="updateQty('${item}', -1)" class="w-4 h-4 rounded bg-white shadow-sm flex items-center justify-center font-bold text-gray-400 hover:text-amber-800 transition-colors text-[9px]">-</button>
+                        <span class="font-mono font-bold text-amber-900 text-[9px]">${quantities[item]}</span>
+                        <button onclick="updateQty('${item}', 1)" class="w-4 h-4 rounded bg-white shadow-sm flex items-center justify-center font-bold text-gray-400 hover:text-amber-800 transition-colors text-[9px]">+</button>
                     </div>
                 </div>
             `).join('');
@@ -487,6 +672,10 @@
                 quantities[item] = 1;
             }
             renderGarments();
+            // Automatically update canvas titles if in measurement mode
+            if (activeFieldId === null && selectedGarments.size > 0) {
+                drawLabelsOnPad();
+            }
         }
 
         function updateQty(item, delta) {
@@ -497,6 +686,10 @@
                 selectedGarments.delete(item);
             }
             renderGarments();
+            // Automatically update canvas titles if in measurement mode
+            if (activeFieldId === null && selectedGarments.size > 0) {
+                drawLabelsOnPad();
+            }
         }
 
         function renderPricingDashboard() {
@@ -529,23 +722,29 @@
             let twoFingerErasing = false;
 
             const start = (e) => {
-                // Ensure only primary touch/pen starts normal drawing
                 if (e.pointerType === 'touch' && !e.isPrimary) return;
                 
                 saveState(); // Saves state BEFORE stroke for Undo capability
                 drawing = true; 
                 
-                // Hardware Stylus Eraser auto-detection (Standard buttons code 32 or button 5)
                 isPointerEraser = (e.pointerType === 'pen' && (e.buttons === 32 || e.button === 5));
                 
                 const pos = getPos(e); 
                 ctx.beginPath(); 
                 ctx.moveTo(pos.x, pos.y); 
+
+                // Smartboard stroke recording initial states
+                strokeStartTime = Date.now();
+                currentStrokeX = [Math.round(pos.x)];
+                currentStrokeY = [Math.round(pos.y)];
+                currentStrokeT = [0];
                 
-                // Capture pointer to avoid interruptions
                 if (e.pointerType === 'touch' || e.pointerType === 'pen') {
                     canvas.setPointerCapture(e.pointerId);
                 }
+
+                // If user is writing, hide instruction overlay
+                document.getElementById('hwr-instruction-overlay').classList.add('hidden');
             };
             
             const draw = (e) => { 
@@ -553,13 +752,11 @@
                 e.preventDefault(); 
                 const pos = getPos(e); 
                 
-                // Smart auto-erase decision:
-                // Triggers if manually chosen, physical stylus eraser touches, or two-finger wipe is active
                 const useEraser = activeTool === 'eraser' || isPointerEraser || twoFingerErasing || (e.pointerType === 'pen' && e.buttons === 32);
                 
                 if (useEraser) {
                     ctx.globalCompositeOperation = 'destination-out';
-                    ctx.lineWidth = twoFingerErasing ? 40 : 25; // Fat stroke for fingers, medium for stylus eraser
+                    ctx.lineWidth = twoFingerErasing ? 40 : 25; 
                 } else {
                     ctx.globalCompositeOperation = 'source-over';
                     ctx.lineWidth = 2.5;
@@ -568,6 +765,11 @@
                 
                 ctx.lineTo(pos.x, pos.y); 
                 ctx.stroke(); 
+
+                // Append coordinates to recognition matrix
+                currentStrokeX.push(Math.round(pos.x));
+                currentStrokeY.push(Math.round(pos.y));
+                currentStrokeT.push(Date.now() - strokeStartTime);
             };
             
             const stop = (e) => {
@@ -575,6 +777,12 @@
                     drawing = false; 
                     isPointerEraser = false;
                     twoFingerErasing = false;
+
+                    // Push completed stroke into API stroke container
+                    if (currentStrokeX.length > 1) {
+                        inkData.push([currentStrokeX, currentStrokeY, currentStrokeT]);
+                    }
+
                     if (e && (e.pointerType === 'touch' || e.pointerType === 'pen')) {
                         try {
                             canvas.releasePointerCapture(e.pointerId);
@@ -589,7 +797,7 @@
             canvas.addEventListener('pointerup', stop);
             canvas.addEventListener('pointercancel', stop);
 
-            // Extra TouchEvents to listen for 2-finger gesture without tool selection
+            // 2-finger swipe to erase gesture
             canvas.addEventListener('touchstart', (e) => {
                 if (e.touches.length > 1) {
                     twoFingerErasing = true;
@@ -598,7 +806,6 @@
                         drawing = true;
                     }
                     const rect = canvas.getBoundingClientRect();
-                    // Midpoint between two fingers
                     const x = ((e.touches[0].clientX + e.touches[1].clientX) / 2) - rect.left;
                     const y = ((e.touches[0].clientY + e.touches[1].clientY) / 2) - rect.top;
                     ctx.beginPath();
@@ -608,13 +815,13 @@
 
             canvas.addEventListener('touchmove', (e) => {
                 if (e.touches.length > 1 && drawing) {
-                    e.preventDefault(); // Stop tablet window panning completely
+                    e.preventDefault(); 
                     const rect = canvas.getBoundingClientRect();
                     const x = ((e.touches[0].clientX + e.touches[1].clientX) / 2) - rect.left;
                     const y = ((e.touches[0].clientY + e.touches[1].clientY) / 2) - rect.top;
                     
                     ctx.globalCompositeOperation = 'destination-out';
-                    ctx.lineWidth = 40; // Wide brush for finger wipe
+                    ctx.lineWidth = 40; 
                     ctx.lineTo(x, y);
                     ctx.stroke();
                 }
@@ -630,8 +837,8 @@
         // Handle stylus tool switching
         function setTool(tool) {
             activeTool = tool;
-            document.getElementById('tool-pen').className = `p-1 px-2 rounded text-[10px] font-bold ${tool === 'pen' ? 'bg-amber-800 text-white shadow-sm' : 'hover:bg-white text-gray-600'}`;
-            document.getElementById('tool-eraser').className = `p-1 px-2 rounded text-[10px] font-bold ${tool === 'eraser' ? 'bg-amber-800 text-white shadow-sm' : 'hover:bg-white text-gray-600'}`;
+            document.getElementById('tool-pen').className = `px-2 py-0.5 rounded text-[8.5px] font-bold ${tool === 'pen' ? 'bg-amber-800 text-white shadow-sm' : 'hover:bg-white text-gray-600'}`;
+            document.getElementById('tool-eraser').className = `px-2 py-0.5 rounded text-[8.5px] font-bold ${tool === 'eraser' ? 'bg-amber-800 text-white shadow-sm' : 'hover:bg-white text-gray-600'}`;
         }
 
         // Undo / Redo mechanics
@@ -640,7 +847,7 @@
                 undoStack.shift();
             }
             undoStack.push(canvas.toDataURL());
-            redoStack = []; // Clear redo stack on any new interaction
+            redoStack = []; 
         }
 
         function undo() {
@@ -680,8 +887,9 @@
             ctx.lineCap = 'round';
             ctx.strokeStyle = '#0f172a';
 
-            if (selectedGarments.size > 0) {
-                renderSelectedLabels();
+            // Redraw active lists if not in handwriting recognition mode
+            if (activeFieldId === null && selectedGarments.size > 0) {
+                drawLabelsOnPad();
             }
 
             const img = new Image();
@@ -692,26 +900,51 @@
         }
 
         function clearCanvas() {
-            saveState(); // Allow undo of clear action
+            saveState(); 
             ctx.clearRect(0, 0, canvas.width, canvas.height);
-            if(selectedGarments.size > 0) renderSelectedLabels();
+            inkData = []; // Clear HWR stroke logs as well
+
+            // Re-render template titles ONLY if active handwriting field is empty/null
+            if (activeFieldId === null && selectedGarments.size > 0) {
+                drawLabelsOnPad();
+            }
         }
 
-        // START MEASURING ACTION (Fires dynamic label drawing like image_24dc3f.png)
+        // START MEASURING ACTION (Renders template labels matching image_24dc3f.png design)
         function goToMeasurements() {
-            if (selectedGarments.size === 0) return;
+            // Cancel customer fields selection if active
+            deactivateField();
+
+            if (selectedGarments.size === 0) {
+                showToast("Please select at least one garment from the top bar!");
+                return;
+            }
             clearCanvas();
+            drawLabelsOnPad();
         }
 
-        function renderSelectedLabels() {
+        // Draw Stylus guidelines directly onto yellow board (image_24dc3f.png concept)
+        function drawLabelsOnPad() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
             ctx.save();
-            ctx.font = "bold 16px 'Courier New', monospace";
+            ctx.font = "bold 15px 'Courier New', monospace";
             ctx.fillStyle = '#1e293b';
             
             let currentY = 55;
             selectedGarments.forEach(item => {
-                ctx.fillText(item.toLowerCase() + ":", 25, currentY);
-                currentY += 140; // Space for handwriting measurements
+                const label = item.toLowerCase() + ":";
+                ctx.fillText(label, 25, currentY);
+
+                // Dotted rule line helper matching real workbook
+                ctx.strokeStyle = '#e2e8f0';
+                ctx.lineWidth = 1;
+                ctx.beginPath();
+                ctx.setLineDash([5, 8]);
+                ctx.moveTo(25, currentY + 12);
+                ctx.lineTo(canvas.width - 25, currentY + 12);
+                ctx.stroke();
+
+                currentY += 135; // Spacing to allow physical stylus writing
             });
             ctx.restore();
         }
@@ -746,6 +979,18 @@
             }
         }
 
+        // Custom Message Toast (Replaces banned alert() / confirm() functions)
+        function showToast(msg) {
+            const toast = document.createElement("div");
+            toast.className = "fixed bottom-5 left-1/2 -translate-x-1/2 bg-amber-900 text-white font-bold text-[10px] py-2 px-5 rounded-full shadow-lg z-[9999] transition-all duration-300";
+            toast.innerText = msg;
+            document.body.appendChild(toast);
+            setTimeout(() => {
+                toast.classList.add("opacity-0");
+                setTimeout(() => toast.remove(), 300);
+            }, 3500);
+        }
+
         // Preview Bill Invoice
         function previewInvoice() {
             document.getElementById('inv-cust-name').innerText = document.getElementById('custName').value || "Walk-In Customer";
@@ -769,23 +1014,22 @@
 
                     tbody.innerHTML += `
                         <tr class="border-b border-gray-100">
-                            <td class="py-1.5 font-bold text-gray-800">${item}</td>
-                            <td class="py-1.5 text-center font-mono">${qty}</td>
-                            <td class="py-1.5 text-right font-mono">₹${rate}</td>
-                            <td class="py-1.5 text-right font-bold text-amber-900 font-mono">₹${amt}</td>
+                            <td class="py-1.5 font-bold text-gray-800 text-[10px]">${item}</td>
+                            <td class="py-1.5 text-center font-mono text-[10px]">${qty}</td>
+                            <td class="py-1.5 text-right font-mono text-[10px]">₹${rate}</td>
+                            <td class="py-1.5 text-right font-bold text-amber-900 font-mono text-[10px]">₹${amt}</td>
                         </tr>
                     `;
                 }
             });
 
             tbody.innerHTML += `
-                <tr class="font-bold text-xs text-amber-900">
+                <tr class="font-bold text-[10px] text-amber-900">
                     <td colspan="3" class="pt-3 text-right">Grand Total:</td>
-                    <td class="pt-3 text-right font-mono text-sm">₹${totalAmount}</td>
+                    <td class="pt-3 text-right font-mono text-xs">₹${totalAmount}</td>
                 </tr>
             `;
 
-            // Draw current canvas strokes to popup
             const imgData = canvas.toDataURL();
             document.getElementById('inv-drawing-img').src = imgData;
 
@@ -801,10 +1045,9 @@
             
             billNumber += 1;
             
-            // Clear input fields
+            // Reset state
             document.getElementById('custName').value = '';
             document.getElementById('custMobile').value = '';
-            document.getElementById('custEmail').value = '';
             document.getElementById('custAddress').value = '';
             
             selectedGarments.clear();
@@ -812,10 +1055,13 @@
             
             undoStack = [];
             redoStack = [];
+            inkData = [];
             
             renderGarments();
             clearCanvas();
             closeInvoiceModal();
+            deactivateField();
+            showToast("Bill Invoice printed and cleared successfully!");
         }
     </script>
 </body>
