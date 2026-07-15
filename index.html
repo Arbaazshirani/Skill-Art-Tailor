@@ -40,7 +40,7 @@
             animation: pulse-green 1.5s infinite;
         }
         @keyframes pulse-green {
-            0 { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.7); }
+            0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.7); }
             70% { transform: scale(1); box-shadow: 0 0 0 5px rgba(34, 197, 94, 0); }
             100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(34, 197, 94, 0); }
         }
@@ -89,10 +89,11 @@
 
         /* Active highlight for handwriting mode fields */
         .active-field-highlight {
-            border-bottom: 2.5px solid #d97706 !important;
+            border: 2px solid #d97706 !important;
             background-color: #fef3c7 !important;
-            border-radius: 4px 4px 0 0;
+            border-radius: 8px;
             transition: all 0.2s ease;
+            box-shadow: 0 4px 6px -1px rgba(217, 119, 6, 0.1);
         }
 
         @media print { 
@@ -130,10 +131,10 @@
                 <div class="space-y-3 flex-1 overflow-y-auto custom-scroll pr-1">
                     
                     <!-- Branding Header with Language Selection inside (Untitled2.png style) -->
-                    <div class="flex justify-between items-start mb-2 border-b pb-2">
+                    <div class="flex justify-between items-start mb-1 border-b pb-1.5">
                         <div>
-                            <h2 class="text-base font-extrabold text-amber-900 uppercase tracking-tight leading-tight">ROYAL TAILOR</h2>
-                            <p class="text-[8px] uppercase tracking-wider text-gray-400 font-semibold">DIGITAL BILLING SYSTEM</p>
+                            <h2 class="text-[12px] font-extrabold text-amber-900 uppercase tracking-tight leading-tight">ROYAL TAILOR</h2>
+                            <p class="text-[7px] uppercase tracking-wider text-gray-400 font-semibold">DIGITAL BILLING SYSTEM</p>
                         </div>
                         <!-- Language Selector (Compact pill) -->
                         <div class="flex bg-gray-100 p-0.5 rounded-md border border-gray-200">
@@ -151,18 +152,20 @@
                     </div>
 
                     <!-- Customer Fields Panel -->
-                    <div class="space-y-4">
+                    <div class="space-y-3">
                         <div class="flex justify-between items-center">
-                            <h3 class="text-[11px] font-extrabold text-gray-800 uppercase tracking-wider" id="title-part1">Customer Details</h3>
-                            <span class="text-[8px] text-amber-800 bg-amber-50 px-1.5 py-0.5 rounded font-bold border border-amber-100">✍️ Smart Pad Active</span>
+                            <h3 class="text-[10px] font-extrabold text-gray-800 uppercase tracking-wider" id="title-part1">Customer Details</h3>
+                            <span class="text-[7.5px] text-amber-800 bg-amber-50 px-1.5 py-0.5 rounded font-bold border border-amber-100">✍️ Smart Pad Active</span>
                         </div>
                         
                         <!-- Full Name Field -->
-                        <div class="space-y-0.5 input-container cursor-pointer group" onclick="focusField('custName')">
-                            <label class="text-[7.5px] font-bold text-gray-400 uppercase tracking-wider block" id="label-name">Full Name</label>
+                        <div class="space-y-0.5 input-container cursor-pointer p-1.5 border border-transparent rounded-lg transition-all" onclick="focusField('custName')">
+                            <label class="text-[8px] font-bold text-gray-400 uppercase tracking-wider block" id="label-name">Full Name</label>
                             <div class="relative flex items-center">
-                                <input type="text" id="custName" class="w-full border-b border-gray-200 py-1 pr-14 focus:border-amber-500 outline-none font-bold text-[11px] bg-transparent" placeholder="Enter Name" readonly>
-                                <div class="absolute right-0 flex items-center gap-0.5" onclick="event.stopPropagation()">
+                                <input type="text" id="custName" class="w-full border-b border-gray-200 py-1 pr-24 focus:border-amber-500 outline-none font-bold text-[11px] bg-transparent" placeholder="Enter Name" readonly>
+                                <div class="absolute right-0 flex items-center gap-1" onclick="event.stopPropagation()">
+                                    <!-- Dynamic Inline OK Button -->
+                                    <button id="ok-custName" onclick="convertScribbleToText()" class="hidden bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-[8.5px] px-2 py-0.5 rounded shadow active:scale-95 transition-all">OK ✔</button>
                                     <button id="mic-custName" onclick="startVoiceInput('custName')" class="text-gray-400 hover:text-amber-800 transition-colors text-[10px] p-1" title="Voice Input">🎙️</button>
                                     <button onclick="clearField('custName')" class="text-gray-300 hover:text-red-500 transition-colors text-[9px] p-1 font-bold" title="Erase">❌</button>
                                 </div>
@@ -170,11 +173,13 @@
                         </div>
 
                         <!-- Mobile Number Field -->
-                        <div class="space-y-0.5 input-container cursor-pointer group" onclick="focusField('custMobile')">
-                            <label class="text-[7.5px] font-bold text-gray-400 uppercase tracking-wider block" id="label-mobile">Mobile Number</label>
+                        <div class="space-y-0.5 input-container cursor-pointer p-1.5 border border-transparent rounded-lg transition-all" onclick="focusField('custMobile')">
+                            <label class="text-[8px] font-bold text-gray-400 uppercase tracking-wider block" id="label-mobile">Mobile Number</label>
                             <div class="relative flex items-center">
-                                <input type="tel" id="custMobile" class="w-full border-b border-gray-200 py-1 pr-14 outline-none font-mono font-bold text-[11px] bg-transparent" placeholder="Numeric Pad" readonly>
-                                <div class="absolute right-0 flex items-center gap-0.5" onclick="event.stopPropagation()">
+                                <input type="tel" id="custMobile" class="w-full border-b border-gray-200 py-1 pr-24 outline-none font-mono font-bold text-[11px] bg-transparent" placeholder="Numeric Pad" readonly>
+                                <div class="absolute right-0 flex items-center gap-1" onclick="event.stopPropagation()">
+                                    <!-- Dynamic Inline OK Button -->
+                                    <button id="ok-custMobile" onclick="convertScribbleToText()" class="hidden bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-[8.5px] px-2 py-0.5 rounded shadow active:scale-95 transition-all">OK ✔</button>
                                     <button id="mic-custMobile" onclick="startVoiceInput('custMobile')" class="text-gray-400 hover:text-amber-800 transition-colors text-[10px] p-1" title="Voice Input">🎙️</button>
                                     <button onclick="clearField('custMobile')" class="text-gray-300 hover:text-red-500 transition-colors text-[9px] p-1 font-bold" title="Erase">❌</button>
                                 </div>
@@ -182,11 +187,13 @@
                         </div>
 
                         <!-- Address Field -->
-                        <div class="space-y-0.5 input-container cursor-pointer group" onclick="focusField('custAddress')">
-                            <label class="text-[7.5px] font-bold text-gray-400 uppercase tracking-wider block" id="label-address">Address</label>
+                        <div class="space-y-0.5 input-container cursor-pointer p-1.5 border border-transparent rounded-lg transition-all" onclick="focusField('custAddress')">
+                            <label class="text-[8px] font-bold text-gray-400 uppercase tracking-wider block" id="label-address">Address</label>
                             <div class="relative flex items-center">
-                                <input type="text" id="custAddress" class="w-full border-b border-gray-200 py-1 pr-14 outline-none text-[11px] font-bold bg-transparent" placeholder="City/Area" readonly>
-                                <div class="absolute right-0 flex items-center gap-0.5" onclick="event.stopPropagation()">
+                                <input type="text" id="custAddress" class="w-full border-b border-gray-200 py-1 pr-24 outline-none text-[11px] font-bold bg-transparent" placeholder="City/Area" readonly>
+                                <div class="absolute right-0 flex items-center gap-1" onclick="event.stopPropagation()">
+                                    <!-- Dynamic Inline OK Button -->
+                                    <button id="ok-custAddress" onclick="convertScribbleToText()" class="hidden bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-[8.5px] px-2 py-0.5 rounded shadow active:scale-95 transition-all">OK ✔</button>
                                     <button id="mic-custAddress" onclick="startVoiceInput('custAddress')" class="text-gray-400 hover:text-amber-800 transition-colors text-[10px] p-1" title="Voice Input">🎙️</button>
                                     <button onclick="clearField('custAddress')" class="text-gray-300 hover:text-red-500 transition-colors text-[9px] p-1 font-bold" title="Erase">❌</button>
                                 </div>
@@ -195,7 +202,7 @@
 
                         <!-- Tip Box for Tablet Handwriting -->
                         <div class="p-2 bg-amber-50 rounded-lg border border-amber-100 text-[8px] text-amber-900 leading-normal" id="handwriting-notice">
-                            <strong>How to fill:</strong> Tap on any input box, scribble/write the text clearly on the <strong>Note Pad</strong> on the right, and then tap <strong>"OK ✔"</strong> to auto-fill!
+                            <strong>How to fill:</strong> Tap on any input box, write clearly on the <strong>Note Pad</strong> on the right, then tap the pulsing <strong>"OK ✔"</strong> button to convert!
                         </div>
                     </div>
                 </div>
@@ -212,8 +219,8 @@
             <div class="w-[72%] flex flex-col gap-2 h-full overflow-hidden">
                 
                 <!-- TOP BLOCK: Select Garments (Horizontal Row as per Untitled2.png) -->
-                <div class="bg-white p-2.5 rounded-xl shadow-sm border border-gray-100 shrink-0 no-print">
-                    <h2 class="text-[10px] font-bold text-gray-700 mb-1" id="title-part2">Select Garments</h2>
+                <div class="bg-white p-2 rounded-xl shadow-sm border border-gray-100 shrink-0 no-print">
+                    <h2 class="text-[9px] font-bold text-gray-700 mb-1" id="title-part2">Select Garments</h2>
                     
                     <!-- Horizontal Scrolling Cards container -->
                     <div class="flex gap-2 overflow-x-auto pb-1 custom-scroll" id="garment-grid">
@@ -222,7 +229,7 @@
                 </div>
 
                 <!-- BOTTOM BLOCK: Stylus Measurement Note Pad (Large view per Untitled2.png) -->
-                <div id="notepad-section" class="flex-1 bg-white p-3 rounded-xl shadow-sm border border-gray-100 flex flex-col overflow-hidden min-h-0">
+                <div id="notepad-section" class="flex-1 bg-white p-2.5 rounded-xl shadow-sm border border-gray-100 flex flex-col overflow-hidden min-h-0">
                     <div class="flex justify-between items-center mb-1.5 shrink-0">
                         <div class="flex items-center gap-2">
                             <h2 class="text-xs font-bold text-gray-800" id="label-notes">Measurement Note Pad</h2>
@@ -234,6 +241,11 @@
                         
                         <!-- Interactive Toolbar Pill (Design matched to Untitled2.png) -->
                         <div class="flex items-center gap-1.5">
+                            <!-- SPECIAL HIGH-VISIBILITY OK/CONVERT BUTTON (Pulsing Emerald) -->
+                            <button id="btn-hwr-ok" onclick="convertScribbleToText()" class="hidden px-4 py-1 rounded-lg text-[9.5px] font-bold bg-emerald-600 hover:bg-emerald-700 text-white shadow-lg active:scale-95 transition-all animate-bounce flex items-center gap-1">
+                                OK ✔ Convert to Text
+                            </button>
+
                             <div class="flex items-center bg-gray-100 p-0.5 rounded-md border border-gray-200">
                                 <button id="tool-pen" onclick="setTool('pen')" class="px-2 py-0.5 rounded text-[8.5px] font-bold bg-amber-800 text-white shadow-sm transition-all" title="Pen">
                                     ✏️ Pen
@@ -250,11 +262,6 @@
                                 </button>
                             </div>
 
-                            <!-- SPECIAL DYNAMIC OK BUTTON (ONLY visible during customer data input) -->
-                            <button id="btn-hwr-ok" onclick="convertScribbleToText()" class="hidden px-3.5 py-0.5 rounded-md text-[9px] font-bold bg-emerald-600 hover:bg-emerald-700 text-white shadow-md active:scale-95 transition-all flex items-center gap-1">
-                                OK ✔
-                            </button>
-
                             <!-- Start Measuring Trigger -->
                             <button onclick="goToMeasurements()" class="px-3.5 py-0.5 bg-amber-800 hover:bg-amber-900 text-white rounded-md font-bold text-[9px] shadow active:scale-95 transition-all flex items-center gap-1" id="btn-go-to-pad-container">
                                 <span id="btn-go-to-pad">Start Measuring</span> ✍️
@@ -267,8 +274,8 @@
                     <!-- Yellow Lined Stylus Notebook Canvas Area -->
                     <div class="flex-1 border border-amber-100 rounded-lg overflow-hidden shadow-inner bg-[#fffef0] relative min-h-0">
                         <!-- Instructions screen for handwriting overlay -->
-                        <div id="hwr-instruction-overlay" class="hidden absolute inset-0 bg-amber-900/5 backdrop-blur-[0.5px] pointer-events-none flex items-center justify-center">
-                            <span class="text-[10px] text-amber-900/60 font-semibold tracking-wider bg-white/95 px-3 py-1 rounded-full border border-amber-100 shadow-sm">✍️ Write with Stylus below...</span>
+                        <div id="hwr-instruction-overlay" class="hidden absolute inset-0 bg-amber-950/5 backdrop-blur-[0.5px] pointer-events-none flex items-center justify-center">
+                            <span class="text-[10px] text-amber-950 font-bold tracking-wider bg-white/95 px-4 py-1.5 rounded-full border border-amber-200 shadow">✍️ Write here, then tap the Green "OK ✔" button</span>
                         </div>
                         <canvas id="measCanvas" class="handwriting-pad w-full h-full"></canvas>
                     </div>
@@ -514,9 +521,12 @@
 
         // FOCUS CUSTOMER FIELDS TO START HANDWRITING
         function focusField(fieldId) {
-            // Remove previous active highlights
+            // Remove previous active highlights and hide all OK buttons
             document.querySelectorAll('.input-container').forEach(el => {
                 el.classList.remove('active-field-highlight');
+            });
+            document.querySelectorAll('[id^="ok-"]').forEach(el => {
+                el.classList.add('hidden');
             });
 
             // If we clicked on the already active field, toggle it off
@@ -531,15 +541,23 @@
             const container = document.getElementById(fieldId).closest('.input-container');
             container.classList.add('active-field-highlight');
 
+            // Show dynamic inline OK button inside customer detail panel
+            const inlineOk = document.getElementById(`ok-${fieldId}`);
+            if (inlineOk) {
+                inlineOk.classList.remove('hidden');
+            }
+
             // Set canvas visual guides
             document.getElementById('active-canvas-indicator').classList.remove('hidden');
             const friendlyName = document.getElementById(fieldId).previousElementSibling.innerText;
             document.getElementById('active-canvas-indicator').innerText = `Smart Fill Active: ${friendlyName}`;
 
-            // Show instructional HWR overlay
-            document.getElementById('hwr-instruction-overlay').classList.remove('hidden');
+            // Show instructional HWR overlay with friendly name guide
+            const overlay = document.getElementById('hwr-instruction-overlay');
+            overlay.innerHTML = `<span class="text-[11px] text-amber-950 font-bold tracking-wider bg-white/95 px-4 py-2 rounded-full border border-amber-200 shadow-md">✍️ Write "${friendlyName}" here, then click "OK ✔"</span>`;
+            overlay.classList.remove('hidden');
 
-            // Show OK button inside drawing toolbar, hide Start Measuring to focus detail typing
+            // Show Main OK button inside drawing toolbar, hide Start Measuring to focus detail typing
             document.getElementById('btn-hwr-ok').classList.remove('hidden');
             document.getElementById('btn-go-to-pad-container').classList.add('hidden');
 
@@ -551,6 +569,9 @@
         function deactivateField() {
             document.querySelectorAll('.input-container').forEach(el => {
                 el.classList.remove('active-field-highlight');
+            });
+            document.querySelectorAll('[id^="ok-"]').forEach(el => {
+                el.classList.add('hidden');
             });
             activeFieldId = null;
             document.getElementById('active-canvas-indicator').classList.add('hidden');
@@ -569,6 +590,7 @@
             }
 
             const fieldToFill = document.getElementById(activeFieldId);
+            const originalPlaceholder = fieldToFill.placeholder;
             fieldToFill.placeholder = "Recognizing... ⏳";
 
             // Determine language code for IME
@@ -649,9 +671,9 @@
             const grid = document.getElementById('garment-grid');
             // Styled as horizontal scrolling compact list matching Untitled2.png view
             grid.innerHTML = garments.map(item => `
-                <div id="card-${item}" onclick="toggleSelection('${item}')" class="garment-card p-1.5 px-3 rounded-lg bg-white flex flex-col justify-between w-32 shrink-0 shadow-sm relative select-none ${selectedGarments.has(item) ? 'selected' : ''}">
+                <div id="card-${item}" onclick="toggleSelection('${item}')" class="garment-card p-1 rounded-lg bg-white flex flex-col justify-between w-28 shrink-0 shadow-sm relative select-none ${selectedGarments.has(item) ? 'selected' : ''}">
                     <div class="flex justify-between items-start gap-1">
-                        <span class="text-[9px] font-bold text-gray-700 leading-tight">${item}</span>
+                        <span class="text-[8.5px] font-bold text-gray-700 leading-tight">${item}</span>
                         ${selectedGarments.has(item) ? '<span class="green-dot shrink-0"></span>' : '<span class="w-1.5 h-1.5 border rounded-full border-gray-200 shrink-0"></span>'}
                     </div>
                     <div class="flex items-center justify-between bg-gray-50 rounded p-0.5 mt-1" onclick="event.stopPropagation()">
@@ -1066,3 +1088,5 @@
     </script>
 </body>
 </html>
+```
+eof
