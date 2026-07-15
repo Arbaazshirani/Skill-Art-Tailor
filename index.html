@@ -16,10 +16,14 @@
             touch-action: manipulation;
         }
 
-        /* Handwriting pad style resembling yellow notebook */
+        /* Lined yellow notebook background using CSS so erasing doesn't wipe lines */
         .handwriting-pad { 
             background: #fffef0; 
+            background-image: linear-gradient(#e2e8f0 1.5px, transparent 1px);
+            background-size: 100% 35px;
+            background-position: 0 30px;
             cursor: crosshair; 
+            touch-action: none; /* Prevents screen scrolling/panning while drawing */
         }
 
         .lang-radio:checked + label { 
@@ -41,7 +45,7 @@
             100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(34, 197, 94, 0); }
         }
 
-        /* Garment cards */
+        /* Garment cards style */
         .garment-card { 
             transition: all 0.2s ease; 
             cursor: pointer; 
@@ -65,7 +69,6 @@
             height: 250px; 
         }
 
-        /* Custom scrollbar for garment list */
         .custom-scroll::-webkit-scrollbar {
             width: 6px;
         }
@@ -78,7 +81,6 @@
             border-radius: 10px;
         }
 
-        /* Dialog/Modal backdrop styling */
         .modal-backdrop {
             background-color: rgba(0, 0, 0, 0.5);
             backdrop-filter: blur(4px);
@@ -93,94 +95,141 @@
 <body class="overflow-hidden h-screen flex flex-col">
 
     <!-- Header (Hidden during Print) -->
-    <header class="no-print bg-white border-b h-16 flex items-center justify-between px-6 z-50 shadow-sm shrink-0">
+    <header class="no-print bg-white border-b h-14 flex items-center justify-between px-6 z-50 shadow-sm shrink-0">
         <div class="flex items-center gap-4">
-            <div class="w-10 h-10 bg-amber-800 rounded-xl flex items-center justify-center text-white text-xl font-bold">RT</div>
+            <div class="w-8 h-8 bg-amber-800 rounded-lg flex items-center justify-center text-white text-base font-bold">RT</div>
             <div>
-                <h1 class="text-lg font-bold tracking-tight text-amber-900 uppercase leading-none">Royal Tailor</h1>
-                <span class="text-[9px] uppercase tracking-widest text-gray-400" id="header-sub">Digital Billing System</span>
+                <h1 class="text-sm font-bold tracking-tight text-amber-900 uppercase leading-none">Royal Tailor</h1>
+                <span class="text-[8px] uppercase tracking-widest text-gray-400" id="header-sub">Digital Billing System</span>
             </div>
         </div>
 
-        <!-- Language Selector -->
-        <div class="flex bg-gray-100 p-1 rounded-xl border border-gray-200">
+        <!-- Language Selector (English Default) -->
+        <div class="flex bg-gray-100 p-0.5 rounded-lg border border-gray-200">
             <input type="radio" name="lang" id="lang-en" value="en" class="lang-radio hidden" checked onchange="changeLang('en')">
-            <label for="lang-en" class="px-4 py-1 text-xs font-bold cursor-pointer rounded-lg transition-all">English</label>
+            <label for="lang-en" class="px-3 py-1 text-[10px] font-bold cursor-pointer rounded-md transition-all">English</label>
             <input type="radio" name="lang" id="lang-hi" value="hi" class="lang-radio hidden" onchange="changeLang('hi')">
-            <label for="lang-hi" class="px-4 py-1 text-xs font-bold cursor-pointer rounded-lg transition-all">हिन्दी</label>
+            <label for="lang-hi" class="px-3 py-1 text-[10px] font-bold cursor-pointer rounded-md transition-all">हिन्दी</label>
         </div>
 
         <div class="flex gap-2">
-            <button onclick="switchTab('billing')" class="nav-tab active px-4 py-1.5 rounded-lg text-xs font-bold border transition-all" id="nav-bill">New Bill</button>
-            <button onclick="switchTab('dashboard')" class="nav-tab px-4 py-1.5 rounded-lg text-xs font-bold border transition-all" id="nav-dash">Dashboard</button>
+            <button onclick="switchTab('billing')" class="nav-tab active px-3 py-1 rounded-md text-[10px] font-bold border transition-all" id="nav-bill">New Bill</button>
+            <button onclick="switchTab('dashboard')" class="nav-tab px-3 py-1 rounded-md text-[10px] font-bold border transition-all" id="nav-dash">Dashboard</button>
         </div>
     </header>
 
     <!-- MAIN WORKSPACE CONTAINER -->
-    <main class="flex-1 flex flex-col p-4 gap-4 overflow-hidden bg-[#fcfaf7] print-layout">
+    <main class="flex-1 flex flex-col p-3 gap-3 overflow-hidden bg-[#fcfaf7] print-layout">
         
         <!-- BILLING SECTION (Tab Content) -->
-        <div id="tab-billing" class="tab-content flex-1 flex flex-col gap-3 overflow-hidden">
+        <div id="tab-billing" class="tab-content flex-1 flex flex-col gap-2.5 overflow-hidden">
             
             <!-- Global Search Bar at top center -->
-            <div class="relative max-w-xl mx-auto w-full no-print">
-                <input type="text" id="globalSearch" class="w-full bg-white border border-gray-200 rounded-full py-2 px-10 shadow-sm focus:ring-2 focus:ring-amber-500 outline-none text-sm" placeholder="Search customer records...">
-                <span class="absolute left-4 top-2 text-sm opacity-30">🔍</span>
+            <div class="relative max-w-lg mx-auto w-full no-print">
+                <input type="text" id="globalSearch" class="w-full bg-white border border-gray-200 rounded-full py-1.5 px-8 shadow-sm focus:ring-2 focus:ring-amber-500 outline-none text-xs" placeholder="Search customer records...">
+                <span class="absolute left-3 top-2 text-xs opacity-30">🔍</span>
             </div>
 
-            <!-- Part 1: Customer Details (Horizontal Strip) -->
-            <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 no-print shrink-0">
-                <h2 class="text-sm font-bold text-gray-800 flex items-center gap-2 mb-3" id="title-part1">Customer Details</h2>
-                <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <!-- Customer Details (Horizontal Strip per Untitled.png) -->
+            <div class="bg-white p-3.5 rounded-2xl shadow-sm border border-gray-100 no-print shrink-0">
+                <h2 class="text-xs font-bold text-gray-800 flex items-center gap-2 mb-2" id="title-part1">Customer Details</h2>
+                <div class="grid grid-cols-4 gap-4">
+                    <!-- Full Name Field -->
                     <div class="space-y-0.5">
-                        <label class="text-[9px] font-bold text-gray-400 uppercase tracking-wider" id="label-name">Full Name</label>
-                        <input type="text" id="custName" class="w-full border-b border-gray-200 py-1 focus:border-amber-500 outline-none font-semibold text-sm" placeholder="Enter Name">
+                        <label class="text-[8px] font-bold text-gray-400 uppercase tracking-wider" id="label-name">Full Name</label>
+                        <div class="relative flex items-center">
+                            <input type="text" id="custName" class="w-full border-b border-gray-200 py-0.5 pr-10 focus:border-amber-500 outline-none font-semibold text-xs" placeholder="Enter Name">
+                            <div class="absolute right-0 flex items-center gap-1">
+                                <button id="mic-custName" onclick="startVoiceInput('custName')" class="text-gray-400 hover:text-amber-800 transition-colors text-xs p-1" title="Voice Input">🎙️</button>
+                                <button onclick="clearField('custName')" class="text-gray-300 hover:text-red-500 transition-colors text-[10px] p-1 font-bold" title="Erase">❌</button>
+                            </div>
+                        </div>
                     </div>
-                    <div class="space-y-0.5 relative">
-                        <label class="text-[9px] font-bold text-gray-400 uppercase tracking-wider" id="label-mobile">Mobile Number</label>
-                        <input type="tel" id="custMobile" class="w-full border-b border-gray-200 py-1 outline-none font-mono font-bold text-sm" placeholder="Numeric Pad">
-                    </div>
+                    <!-- Mobile Number Field -->
                     <div class="space-y-0.5">
-                        <label class="text-[9px] font-bold text-gray-400 uppercase tracking-wider" id="label-email">Email Address</label>
-                        <input type="email" id="custEmail" class="w-full border-b border-gray-200 py-1 outline-none text-sm" placeholder="example@mail.com">
+                        <label class="text-[8px] font-bold text-gray-400 uppercase tracking-wider" id="label-mobile">Mobile Number</label>
+                        <div class="relative flex items-center">
+                            <input type="tel" id="custMobile" class="w-full border-b border-gray-200 py-0.5 pr-10 outline-none font-mono font-bold text-xs" placeholder="Numeric Pad">
+                            <div class="absolute right-0 flex items-center gap-1">
+                                <button id="mic-custMobile" onclick="startVoiceInput('custMobile')" class="text-gray-400 hover:text-amber-800 transition-colors text-xs p-1" title="Voice Input">🎙️</button>
+                                <button onclick="clearField('custMobile')" class="text-gray-300 hover:text-red-500 transition-colors text-[10px] p-1 font-bold" title="Erase">❌</button>
+                            </div>
+                        </div>
                     </div>
+                    <!-- Email Address Field -->
                     <div class="space-y-0.5">
-                        <label class="text-[9px] font-bold text-gray-400 uppercase tracking-wider" id="label-address">Address</label>
-                        <input type="text" id="custAddress" class="w-full border-b border-gray-200 py-1 outline-none text-sm" placeholder="City/Area">
+                        <label class="text-[8px] font-bold text-gray-400 uppercase tracking-wider" id="label-email">Email Address</label>
+                        <div class="relative flex items-center">
+                            <input type="email" id="custEmail" class="w-full border-b border-gray-200 py-0.5 pr-10 outline-none text-xs" placeholder="example@mail.com">
+                            <div class="absolute right-0 flex items-center gap-1">
+                                <button id="mic-custEmail" onclick="startVoiceInput('custEmail')" class="text-gray-400 hover:text-amber-800 transition-colors text-xs p-1" title="Voice Input">🎙️</button>
+                                <button onclick="clearField('custEmail')" class="text-gray-300 hover:text-red-500 transition-colors text-[10px] p-1 font-bold" title="Erase">❌</button>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Address Field -->
+                    <div class="space-y-0.5">
+                        <label class="text-[8px] font-bold text-gray-400 uppercase tracking-wider" id="label-address">Address</label>
+                        <div class="relative flex items-center">
+                            <input type="text" id="custAddress" class="w-full border-b border-gray-200 py-0.5 pr-10 outline-none text-xs" placeholder="City/Area">
+                            <div class="absolute right-0 flex items-center gap-1">
+                                <button id="mic-custAddress" onclick="startVoiceInput('custAddress')" class="text-gray-400 hover:text-amber-800 transition-colors text-xs p-1" title="Voice Input">🎙️</button>
+                                <button onclick="clearField('custAddress')" class="text-gray-300 hover:text-red-500 transition-colors text-[10px] p-1 font-bold" title="Erase">❌</button>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
 
-            <!-- SPLIT SCREEN: Left Notepad, Right Garments Selection -->
-            <div class="flex-1 grid grid-cols-12 gap-4 overflow-hidden min-h-0">
+            <!-- SPLIT SCREEN LAYOUT (Untitled.png Alignment) -->
+            <div class="flex-1 grid grid-cols-12 gap-3 overflow-hidden min-h-0">
                 
-                <!-- Part 3: Handwriting Notepad (Left Side - Bada Column) -->
-                <div id="notepad-section" class="col-span-12 md:col-span-8 bg-white p-4 rounded-2xl shadow-sm border border-gray-100 flex flex-col h-full overflow-hidden">
+                <!-- Measurement Note Pad (Left Side - 8 Cols) -->
+                <div id="notepad-section" class="col-span-8 bg-white p-3 rounded-2xl shadow-sm border border-gray-100 flex flex-col h-full overflow-hidden">
                     <div class="flex justify-between items-center mb-2 shrink-0">
-                        <h2 class="text-sm font-bold text-gray-800" id="label-notes">Measurement Note Pad</h2>
-                        <button onclick="clearCanvas()" class="px-3 py-1 text-[10px] font-bold text-red-500 border border-red-100 rounded-lg hover:bg-red-50" id="btn-clear-all">Clear All</button>
+                        <h2 class="text-xs font-bold text-gray-800" id="label-notes">Measurement Note Pad</h2>
+                        
+                        <!-- Drawing Toolbar (Pen, Eraser, Undo, Redo, Clear) -->
+                        <div class="flex items-center gap-1 bg-gray-100 p-0.5 rounded-lg border border-gray-200">
+                            <button id="tool-pen" onclick="setTool('pen')" class="p-1 px-2 rounded text-[10px] font-bold bg-amber-800 text-white shadow-sm transition-all" title="Pen">
+                                ✏️ Pen
+                            </button>
+                            <button id="tool-eraser" onclick="setTool('eraser')" class="p-1 px-2 rounded text-[10px] font-bold hover:bg-white text-gray-600 transition-all" title="Eraser">
+                                🧽 Eraser
+                            </button>
+                            <div class="w-px h-4 bg-gray-300 mx-1"></div>
+                            <button onclick="undo()" class="p-1 px-1.5 rounded text-[10px] hover:bg-white text-gray-600 transition-all" title="Undo">
+                                ↩️ Undo
+                            </button>
+                            <button onclick="redo()" class="p-1 px-1.5 rounded text-[10px] hover:bg-white text-gray-600 transition-all" title="Redo">
+                                ↪️ Redo
+                            </button>
+                        </div>
+
+                        <button onclick="clearCanvas()" class="px-2.5 py-0.5 text-[9px] font-bold text-red-500 border border-red-100 rounded-md hover:bg-red-50" id="btn-clear-all">Clear All</button>
                     </div>
-                    <!-- Yellow Lined Paper Stylus Pad -->
+
+                    <!-- Yellow Lined Paper Stylus Canvas -->
                     <div class="flex-1 border border-amber-100 rounded-xl overflow-hidden shadow-inner bg-[#fffef0] relative min-h-0">
                         <canvas id="measCanvas" class="handwriting-pad w-full h-full"></canvas>
                     </div>
                 </div>
 
-                <!-- Part 2: Garment Selection (Right Side - Chota Column) -->
-                <div class="col-span-12 md:col-span-4 bg-white p-4 rounded-2xl shadow-sm border border-gray-100 flex flex-col h-full overflow-hidden no-print">
-                    <h2 class="text-sm font-bold text-gray-800 mb-2 shrink-0" id="title-part2">Select Garments</h2>
+                <!-- Garment Selection & Controls (Right Side - 4 Cols) -->
+                <div class="col-span-4 bg-white p-3 rounded-2xl shadow-sm border border-gray-100 flex flex-col h-full overflow-hidden no-print">
+                    <h2 class="text-xs font-bold text-gray-800 mb-2 shrink-0" id="title-part2">Select Garments</h2>
                     
-                    <!-- Garment Cards Grid inside a scrollable sidebar -->
-                    <div class="flex-1 overflow-y-auto custom-scroll pr-1 gap-2 grid grid-cols-2 min-h-0 content-start" id="garment-grid">
-                        <!-- Injected via JS -->
+                    <!-- Garment Cards Grid -->
+                    <div class="flex-1 overflow-y-auto custom-scroll pr-0.5 gap-2 grid grid-cols-2 min-h-0 content-start" id="garment-grid">
+                        <!-- Injected dynamically via JS -->
                     </div>
 
-                    <!-- Action Panel at bottom-right corner of the sidebar -->
-                    <div class="mt-4 pt-3 border-t flex flex-col gap-2 shrink-0">
-                        <button onclick="goToMeasurements()" class="w-full bg-amber-800 hover:bg-amber-900 text-white py-2.5 rounded-xl font-bold flex items-center justify-center gap-2 shadow-md active:scale-95 transition-all text-sm">
+                    <!-- Action Panel Bottom Buttons -->
+                    <div class="mt-2.5 pt-2 border-t flex flex-col gap-1.5 shrink-0">
+                        <button onclick="goToMeasurements()" class="w-full bg-amber-800 hover:bg-amber-900 text-white py-1.5 rounded-lg font-bold flex items-center justify-center gap-1.5 shadow-sm active:scale-95 transition-all text-xs">
                             <span id="btn-go-to-pad">Start Measuring</span> ✍️
                         </button>
-                        <button onclick="previewInvoice()" class="w-full bg-emerald-700 hover:bg-emerald-800 text-white py-2.5 rounded-xl font-bold text-sm shadow-md active:scale-95 transition-all" id="btn-submit">
+                        <button onclick="previewInvoice()" class="w-full bg-emerald-700 hover:bg-emerald-800 text-white py-1.5 rounded-lg font-bold text-xs shadow-sm active:scale-95 transition-all" id="btn-submit">
                             Preview & Save Bill
                         </button>
                     </div>
@@ -190,18 +239,18 @@
         </div>
 
         <!-- DASHBOARD SECTION (Tab Content) -->
-        <div id="tab-dashboard" class="tab-content hidden flex-1 flex flex-col gap-4 overflow-hidden">
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 flex-1 min-h-0 overflow-y-auto custom-scroll p-1">
-                <!-- Pricing Manager -->
-                <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 h-fit">
-                    <h2 class="text-base font-bold mb-4 text-gray-800" id="dash-title-pricing">Pricing Management (₹)</h2>
-                    <div id="pricing-list" class="space-y-3">
+        <div id="tab-dashboard" class="tab-content hidden flex-1 flex flex-col gap-3 overflow-hidden">
+            <div class="grid grid-cols-2 gap-3 flex-1 min-h-0 overflow-y-auto custom-scroll p-0.5">
+                <!-- Pricing List -->
+                <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-100 h-fit">
+                    <h2 class="text-xs font-bold mb-3 text-gray-800" id="dash-title-pricing">Pricing Management (₹)</h2>
+                    <div id="pricing-list" class="space-y-2">
                         <!-- Injected via JS -->
                     </div>
                 </div>
-                <!-- Analytics -->
-                <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 h-fit flex flex-col items-center">
-                    <h2 class="text-base font-bold mb-4 text-gray-800 self-start" id="dash-title-stats">Stitch Price Stats</h2>
+                <!-- Pricing Distribution Stats Graph -->
+                <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-100 h-fit flex flex-col items-center">
+                    <h2 class="text-xs font-bold mb-3 text-gray-800 self-start" id="dash-title-stats">Stitch Price Stats</h2>
                     <div class="chart-container w-full">
                         <canvas id="priceChart"></canvas>
                     </div>
@@ -211,67 +260,67 @@
 
     </main>
 
-    <!-- INVOICE PREVIEW MODAL (Popup above interface) -->
-    <div id="invoice-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 modal-backdrop no-print">
-        <div class="bg-white rounded-3xl max-w-2xl w-full max-h-[90vh] overflow-y-auto custom-scroll p-6 shadow-2xl flex flex-col border border-gray-100">
+    <!-- INVOICE PREVIEW MODAL -->
+    <div id="invoice-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-3 modal-backdrop no-print">
+        <div class="bg-white rounded-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto custom-scroll p-4 shadow-2xl flex flex-col border border-gray-100">
             <!-- Modal Header -->
-            <div class="flex justify-between items-center border-b pb-3 mb-4">
-                <h3 class="text-lg font-bold text-amber-900" id="invoice-preview-title">Bill Invoice Summary</h3>
-                <button onclick="closeInvoiceModal()" class="text-gray-400 hover:text-gray-600 font-bold text-xl">&times;</button>
+            <div class="flex justify-between items-center border-b pb-2 mb-3">
+                <h3 class="text-xs font-bold text-amber-900" id="invoice-preview-title">Bill Invoice Summary</h3>
+                <button onclick="closeInvoiceModal()" class="text-gray-400 hover:text-gray-600 font-bold text-base">&times;</button>
             </div>
 
-            <!-- Printable Bill Layout Area -->
-            <div id="printable-bill" class="bg-[#fafaf9] p-6 rounded-2xl border border-gray-200 flex-1">
-                <div class="text-center mb-6">
-                    <h2 class="text-3xl font-extrabold text-amber-900 tracking-wide">ROYAL TAILOR</h2>
-                    <p class="text-xs text-gray-500">Premium Digital Tailoring Suite</p>
-                    <p class="text-xs text-gray-400" id="bill-date-time">Date: --/--/---- Time: --:--</p>
+            <!-- Printable Bill Layout -->
+            <div id="printable-bill" class="bg-[#fafaf9] p-4 rounded-xl border border-gray-200 flex-1">
+                <div class="text-center mb-4">
+                    <h2 class="text-xl font-extrabold text-amber-900 tracking-wide">ROYAL TAILOR</h2>
+                    <p class="text-[9px] text-gray-500">Premium Digital Tailoring Suite</p>
+                    <p class="text-[9px] text-gray-400" id="bill-date-time">Date: --/--/---- Time: --:--</p>
                 </div>
 
-                <!-- Customer summary info -->
-                <div class="grid grid-cols-2 gap-4 border-b pb-4 mb-4 text-sm">
+                <!-- Customer Details -->
+                <div class="grid grid-cols-2 gap-2 border-b pb-2 mb-2 text-xs">
                     <div>
-                        <p class="text-[10px] uppercase font-bold text-gray-400">Bill To:</p>
+                        <p class="text-[8px] uppercase font-bold text-gray-400">Bill To:</p>
                         <p class="font-bold text-gray-800" id="inv-cust-name">-</p>
                         <p class="text-gray-500 font-mono" id="inv-cust-mobile">-</p>
                     </div>
                     <div class="text-right">
-                        <p class="text-[10px] uppercase font-bold text-gray-400">Order ID:</p>
+                        <p class="text-[8px] uppercase font-bold text-gray-400">Order ID:</p>
                         <p class="font-bold text-amber-800" id="inv-bill-no">#RT-1001</p>
                         <p class="text-gray-500" id="inv-cust-address">-</p>
                     </div>
                 </div>
 
-                <!-- Selected Garments Details Table -->
-                <table class="w-full text-sm mb-6">
+                <!-- Table Content -->
+                <table class="w-full text-xs mb-4">
                     <thead>
                         <tr class="border-b-2 border-gray-300 text-gray-500 font-semibold text-left">
-                            <th class="pb-2">Garment</th>
-                            <th class="pb-2 text-center">Qty</th>
-                            <th class="pb-2 text-right">Price (₹)</th>
-                            <th class="pb-2 text-right">Total (₹)</th>
+                            <th class="pb-1">Garment</th>
+                            <th class="pb-1 text-center">Qty</th>
+                            <th class="pb-1 text-right">Price (₹)</th>
+                            <th class="pb-1 text-right">Total (₹)</th>
                         </tr>
                     </thead>
-                    <tbody id="inv-items-body" class="divide-y divide-gray-100 text-gray-700">
-                        <!-- Filled by JS -->
+                    <tbody id="inv-items-body" class="divide-y divide-gray-100 text-gray-700 font-semibold">
+                        <!-- Injected via JS -->
                     </tbody>
                 </table>
 
-                <!-- Drawing Snapshot Preview -->
-                <div class="mt-4 border-t pt-4">
-                    <p class="text-xs font-bold text-gray-400 uppercase mb-2">Stylus Measurement Record:</p>
-                    <div class="border rounded-xl overflow-hidden bg-white max-h-56 flex items-center justify-center">
-                        <img id="inv-drawing-img" class="max-w-full max-h-56 object-contain" alt="No measurement sketches done.">
+                <!-- Drawing Snapshot -->
+                <div class="mt-2 border-t pt-2">
+                    <p class="text-[9px] font-bold text-gray-400 uppercase mb-1">Stylus Measurement Record:</p>
+                    <div class="border rounded-lg overflow-hidden bg-[#fffef0] max-h-40 flex items-center justify-center">
+                        <img id="inv-drawing-img" class="max-w-full max-h-40 object-contain" alt="No measurements drawn.">
                     </div>
                 </div>
             </div>
 
             <!-- Modal Action Buttons -->
-            <div class="mt-6 flex justify-end gap-3 pt-4 border-t">
-                <button onclick="closeInvoiceModal()" class="px-5 py-2 rounded-xl text-sm font-bold bg-gray-100 hover:bg-gray-200 text-gray-700 transition-all">
+            <div class="mt-3 flex justify-end gap-2 pt-2 border-t">
+                <button onclick="closeInvoiceModal()" class="px-4 py-1.5 rounded-lg text-xs font-bold bg-gray-100 hover:bg-gray-200 text-gray-700 transition-all">
                     Edit Details ✏️
                 </button>
-                <button onclick="printBillInvoice()" class="px-6 py-2 rounded-xl text-sm font-bold bg-amber-800 hover:bg-amber-900 text-white shadow-md transition-all">
+                <button onclick="printBillInvoice()" class="px-5 py-1.5 rounded-lg text-xs font-bold bg-amber-800 hover:bg-amber-900 text-white shadow-sm transition-all">
                     Print & Save 🖨️
                 </button>
             </div>
@@ -308,26 +357,33 @@
         let chartInstance = null;
         let billNumber = 1001;
 
-        // Drawing state
+        // Tool & Drawing States (Advanced correction feature)
         let drawing = false;
         let canvas, ctx;
+        let activeTool = 'pen'; // 'pen' or 'eraser'
+        
+        // Undo/Redo Stacks
+        let undoStack = [];
+        let redoStack = [];
+        const maxStates = 20;
 
-        // On window load
         window.onload = () => {
             garments.forEach(g => quantities[g] = 0);
             
-            // Core init UI
             renderGarments();
             renderPricingDashboard();
             initCanvas();
             initChart();
-            changeLang('en'); // Defaults to English
+            changeLang('en'); // Defaults English
             
-            // Auto resize canvas context coordinates dynamically on screen adjustments
             window.addEventListener('resize', handleCanvasResize);
+
+            // Save initial blank state for undo capability
+            if (canvas) {
+                undoStack.push(canvas.toDataURL());
+            }
         };
 
-        // Switch application tab views
         function switchTab(tab) {
             document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
             document.querySelectorAll('.nav-tab').forEach(el => el.classList.remove('active'));
@@ -336,7 +392,6 @@
             if(tab === 'dashboard') updateChart();
         }
 
-        // Change languages dynamics
         function changeLang(lang) {
             currentLang = lang;
             const t = i18n[lang];
@@ -360,37 +415,80 @@
             renderGarments();
         }
 
-        // Render selectable garment grid cards
+        // Fast Clear (❌) field handler
+        function clearField(fieldId) {
+            document.getElementById(fieldId).value = '';
+        }
+
+        // Speech-to-Text Feature (Hands-free Voice Input)
+        function startVoiceInput(fieldId) {
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            if (!SpeechRecognition) {
+                alert("Voice typing is only supported in Android Chrome/Brave. Please use active tablet browser.");
+                return;
+            }
+
+            const recognition = new SpeechRecognition();
+            recognition.lang = currentLang === 'hi' ? 'hi-IN' : 'en-US';
+            recognition.interimResults = false;
+            recognition.maxAlternatives = 1;
+
+            const micBtn = document.getElementById(`mic-${fieldId}`);
+            // Visual feedback: animate mic
+            micBtn.classList.add('animate-pulse', 'text-red-500');
+
+            recognition.start();
+
+            recognition.onresult = (event) => {
+                const speechResult = event.results[0][0].transcript;
+                const field = document.getElementById(fieldId);
+                
+                if (fieldId === 'custMobile') {
+                    // Clean numbers for phone field
+                    const cleanedNum = speechResult.replace(/\D/g, '');
+                    field.value = cleanedNum;
+                } else {
+                    field.value = speechResult;
+                }
+            };
+
+            recognition.onerror = (event) => {
+                console.error("Speech Recognition Error: ", event.error);
+            };
+
+            recognition.onend = () => {
+                micBtn.classList.remove('animate-pulse', 'text-red-500');
+            };
+        }
+
         function renderGarments() {
             const grid = document.getElementById('garment-grid');
             grid.innerHTML = garments.map(item => `
-                <div id="card-${item}" onclick="toggleSelection('${item}')" class="garment-card p-3 rounded-xl bg-white flex flex-col justify-between h-24 shadow-sm relative select-none ${selectedGarments.has(item) ? 'selected' : ''}">
+                <div id="card-${item}" onclick="toggleSelection('${item}')" class="garment-card p-2 rounded-xl bg-white flex flex-col justify-between h-20 shadow-sm relative select-none ${selectedGarments.has(item) ? 'selected' : ''}">
                     <div class="flex justify-between items-start">
-                        <span class="text-xs font-bold text-gray-700 leading-tight">${item}</span>
-                        ${selectedGarments.has(item) ? '<span class="green-dot"></span>' : '<span class="w-2.5 h-2.5 border rounded-full border-gray-200"></span>'}
+                        <span class="text-[10px] font-bold text-gray-700 leading-tight">${item}</span>
+                        ${selectedGarments.has(item) ? '<span class="green-dot"></span>' : '<span class="w-2 h-2 border rounded-full border-gray-200"></span>'}
                     </div>
                     <div class="flex items-center justify-between bg-gray-50 rounded-lg p-0.5" onclick="event.stopPropagation()">
-                        <button onclick="updateQty('${item}', -1)" class="w-6 h-6 rounded bg-white shadow-sm flex items-center justify-center font-bold text-gray-400 hover:text-amber-800 transition-colors text-xs">-</button>
-                        <span class="font-mono font-bold text-amber-900 text-xs">${quantities[item]}</span>
-                        <button onclick="updateQty('${item}', 1)" class="w-6 h-6 rounded bg-white shadow-sm flex items-center justify-center font-bold text-gray-400 hover:text-amber-800 transition-colors text-xs">+</button>
+                        <button onclick="updateQty('${item}', -1)" class="w-5 h-5 rounded bg-white shadow-sm flex items-center justify-center font-bold text-gray-400 hover:text-amber-800 transition-colors text-[10px]">-</button>
+                        <span class="font-mono font-bold text-amber-900 text-[10px]">${quantities[item]}</span>
+                        <button onclick="updateQty('${item}', 1)" class="w-5 h-5 rounded bg-white shadow-sm flex items-center justify-center font-bold text-gray-400 hover:text-amber-800 transition-colors text-[10px]">+</button>
                     </div>
                 </div>
             `).join('');
         }
 
-        // Tap to select garments block toggle trigger
         function toggleSelection(item) {
             if (selectedGarments.has(item)) {
                 selectedGarments.delete(item);
                 quantities[item] = 0;
             } else {
                 selectedGarments.add(item);
-                quantities[item] = 1; // Default min quantity to 1 when tapped selection
+                quantities[item] = 1;
             }
             renderGarments();
         }
 
-        // Quantity increment-decrement updates
         function updateQty(item, delta) {
             quantities[item] = Math.max(0, quantities[item] + delta);
             if(quantities[item] > 0) {
@@ -401,21 +499,20 @@
             renderGarments();
         }
 
-        // Pricing administration screen setup
         function renderPricingDashboard() {
             const list = document.getElementById('pricing-list');
             list.innerHTML = garments.map(item => `
-                <div class="flex justify-between items-center p-2.5 bg-gray-50 rounded-xl border border-gray-100 text-sm">
+                <div class="flex justify-between items-center p-1.5 bg-gray-50 rounded-lg border border-gray-100 text-xs">
                     <span class="font-bold text-gray-600">${item}</span>
-                    <div class="flex items-center gap-2">
-                        <span class="text-xs text-gray-400">₹</span>
-                        <input type="number" value="${prices[item]}" onchange="prices['${item}']=parseInt(this.value)" class="w-20 text-right border rounded-lg px-2 py-1 font-mono outline-amber-500 text-xs">
+                    <div class="flex items-center gap-1.5">
+                        <span class="text-[10px] text-gray-400">₹</span>
+                        <input type="number" value="${prices[item]}" onchange="prices['${item}']=parseInt(this.value)" class="w-16 text-right border rounded px-1.5 py-0.5 font-mono outline-amber-500 text-[10px]">
                     </div>
                 </div>
             `).join('');
         }
 
-        // Initialize stylus canvas pad
+        // Advanced Canvas & Tool Configuration
         function initCanvas() {
             canvas = document.getElementById('measCanvas');
             ctx = canvas.getContext('2d');
@@ -423,60 +520,170 @@
             
             const getPos = (e) => {
                 const rect = canvas.getBoundingClientRect();
-                const x = (e.touches ? e.touches[0].clientX : e.clientX) - rect.left;
-                const y = (e.touches ? e.touches[0].clientY : e.clientY) - rect.top;
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
                 return { x, y };
             };
 
-            const start = (e) => { 
+            let isPointerEraser = false;
+            let twoFingerErasing = false;
+
+            const start = (e) => {
+                // Ensure only primary touch/pen starts normal drawing
+                if (e.pointerType === 'touch' && !e.isPrimary) return;
+                
+                saveState(); // Saves state BEFORE stroke for Undo capability
                 drawing = true; 
+                
+                // Hardware Stylus Eraser auto-detection (Standard buttons code 32 or button 5)
+                isPointerEraser = (e.pointerType === 'pen' && (e.buttons === 32 || e.button === 5));
+                
                 const pos = getPos(e); 
                 ctx.beginPath(); 
                 ctx.moveTo(pos.x, pos.y); 
+                
+                // Capture pointer to avoid interruptions
+                if (e.pointerType === 'touch' || e.pointerType === 'pen') {
+                    canvas.setPointerCapture(e.pointerId);
+                }
             };
             
             const draw = (e) => { 
                 if (!drawing) return; 
                 e.preventDefault(); 
                 const pos = getPos(e); 
+                
+                // Smart auto-erase decision:
+                // Triggers if manually chosen, physical stylus eraser touches, or two-finger wipe is active
+                const useEraser = activeTool === 'eraser' || isPointerEraser || twoFingerErasing || (e.pointerType === 'pen' && e.buttons === 32);
+                
+                if (useEraser) {
+                    ctx.globalCompositeOperation = 'destination-out';
+                    ctx.lineWidth = twoFingerErasing ? 40 : 25; // Fat stroke for fingers, medium for stylus eraser
+                } else {
+                    ctx.globalCompositeOperation = 'source-over';
+                    ctx.lineWidth = 2.5;
+                    ctx.strokeStyle = '#0f172a';
+                }
+                
                 ctx.lineTo(pos.x, pos.y); 
                 ctx.stroke(); 
             };
             
-            const stop = () => drawing = false;
+            const stop = (e) => {
+                if (drawing) {
+                    drawing = false; 
+                    isPointerEraser = false;
+                    twoFingerErasing = false;
+                    if (e && (e.pointerType === 'touch' || e.pointerType === 'pen')) {
+                        try {
+                            canvas.releasePointerCapture(e.pointerId);
+                        } catch(err) {}
+                    }
+                }
+            };
 
-            canvas.addEventListener('mousedown', start);
-            canvas.addEventListener('mousemove', draw);
-            canvas.addEventListener('mouseup', stop);
-            canvas.addEventListener('touchstart', start, { passive: false });
-            canvas.addEventListener('touchmove', draw, { passive: false });
-            canvas.addEventListener('touchend', stop);
+            // Modern PointerEvents for standard Pen, Touch, and Mouse
+            canvas.addEventListener('pointerdown', start);
+            canvas.addEventListener('pointermove', draw);
+            canvas.addEventListener('pointerup', stop);
+            canvas.addEventListener('pointercancel', stop);
+
+            // Extra TouchEvents to listen for 2-finger gesture without tool selection
+            canvas.addEventListener('touchstart', (e) => {
+                if (e.touches.length > 1) {
+                    twoFingerErasing = true;
+                    if (!drawing) {
+                        saveState();
+                        drawing = true;
+                    }
+                    const rect = canvas.getBoundingClientRect();
+                    // Midpoint between two fingers
+                    const x = ((e.touches[0].clientX + e.touches[1].clientX) / 2) - rect.left;
+                    const y = ((e.touches[0].clientY + e.touches[1].clientY) / 2) - rect.top;
+                    ctx.beginPath();
+                    ctx.moveTo(x, y);
+                }
+            }, { passive: false });
+
+            canvas.addEventListener('touchmove', (e) => {
+                if (e.touches.length > 1 && drawing) {
+                    e.preventDefault(); // Stop tablet window panning completely
+                    const rect = canvas.getBoundingClientRect();
+                    const x = ((e.touches[0].clientX + e.touches[1].clientX) / 2) - rect.left;
+                    const y = ((e.touches[0].clientY + e.touches[1].clientY) / 2) - rect.top;
+                    
+                    ctx.globalCompositeOperation = 'destination-out';
+                    ctx.lineWidth = 40; // Wide brush for finger wipe
+                    ctx.lineTo(x, y);
+                    ctx.stroke();
+                }
+            }, { passive: false });
+
+            canvas.addEventListener('touchend', (e) => {
+                if (e.touches.length === 0) {
+                    stop();
+                }
+            });
         }
 
-        // Adjust tablet canvas resolution dynamically
+        // Handle stylus tool switching
+        function setTool(tool) {
+            activeTool = tool;
+            document.getElementById('tool-pen').className = `p-1 px-2 rounded text-[10px] font-bold ${tool === 'pen' ? 'bg-amber-800 text-white shadow-sm' : 'hover:bg-white text-gray-600'}`;
+            document.getElementById('tool-eraser').className = `p-1 px-2 rounded text-[10px] font-bold ${tool === 'eraser' ? 'bg-amber-800 text-white shadow-sm' : 'hover:bg-white text-gray-600'}`;
+        }
+
+        // Undo / Redo mechanics
+        function saveState() {
+            if (undoStack.length >= maxStates) {
+                undoStack.shift();
+            }
+            undoStack.push(canvas.toDataURL());
+            redoStack = []; // Clear redo stack on any new interaction
+        }
+
+        function undo() {
+            if (undoStack.length > 0) {
+                let current = canvas.toDataURL();
+                redoStack.push(current);
+                let previous = undoStack.pop();
+                restoreCanvas(previous);
+            }
+        }
+
+        function redo() {
+            if (redoStack.length > 0) {
+                let next = redoStack.pop();
+                undoStack.push(canvas.toDataURL());
+                restoreCanvas(next);
+            }
+        }
+
+        function restoreCanvas(dataUrl) {
+            let img = new Image();
+            img.onload = () => {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                ctx.drawImage(img, 0, 0);
+            };
+            img.src = dataUrl;
+        }
+
         function handleCanvasResize() {
             if (!canvas) return;
-            const tempCopy = canvas.toDataURL(); // Save drawings on orientation/resizes
-            const oldWidth = canvas.width;
-            const oldHeight = canvas.height;
+            const tempCopy = canvas.toDataURL(); 
 
             canvas.width = canvas.parentElement.offsetWidth;
             canvas.height = canvas.parentElement.offsetHeight;
             
-            // Canvas brush config
             ctx.lineWidth = 2.5;
             ctx.lineCap = 'round';
             ctx.strokeStyle = '#0f172a';
 
-            // Draw base design guidelines (horizontal lined paper)
-            drawBaseLines();
-
-            // Re-draw titles when viewport shifts
             if (selectedGarments.size > 0) {
                 renderSelectedLabels();
             }
 
-            // Restore previous sketch safely
             const img = new Image();
             img.onload = () => {
                 ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
@@ -484,53 +691,31 @@
             img.src = tempCopy;
         }
 
-        // Draw notebook yellow grid guidelines
-        function drawBaseLines() {
-            ctx.save();
-            ctx.strokeStyle = '#e2e8f0';
-            ctx.lineWidth = 1;
-            
-            // Draw notepad horizontal ruling lines (40px intervals)
-            for(let y = 30; y < canvas.height; y += 35) {
-                ctx.beginPath();
-                ctx.moveTo(0, y);
-                ctx.lineTo(canvas.width, y);
-                ctx.stroke();
-            }
-            ctx.restore();
-        }
-
-        // Clear pad canvas cleanly
         function clearCanvas() {
+            saveState(); // Allow undo of clear action
             ctx.clearRect(0, 0, canvas.width, canvas.height);
-            drawBaseLines();
             if(selectedGarments.size > 0) renderSelectedLabels();
         }
 
-        // Start Measuring Action (Trigger titles insertion dynamically matching screenshot layout)
+        // START MEASURING ACTION (Fires dynamic label drawing like image_24dc3f.png)
         function goToMeasurements() {
-            if (selectedGarments.size === 0) {
-                return; // Nothing selected, let tailor choose comfortably
-            }
-            renderSelectedLabels();
+            if (selectedGarments.size === 0) return;
+            clearCanvas();
         }
 
-        // Render selected garments list as labels on the Note Pad (image_24dc3f.png)
         function renderSelectedLabels() {
             ctx.save();
-            ctx.font = "bold 20px 'Courier New', monospace";
+            ctx.font = "bold 16px 'Courier New', monospace";
             ctx.fillStyle = '#1e293b';
             
             let currentY = 55;
             selectedGarments.forEach(item => {
-                // Formatting name directly to lowercase representing image snapshot: "shirt:"
-                ctx.fillText(item.toLowerCase() + ":", 30, currentY);
-                currentY += 140; // Adequate whitespace vertical offset margins for custom stylus text writing
+                ctx.fillText(item.toLowerCase() + ":", 25, currentY);
+                currentY += 140; // Space for handwriting measurements
             });
             ctx.restore();
         }
 
-        // Chart representation values on dashboard
         function initChart() {
             const ctxChart = document.getElementById('priceChart').getContext('2d');
             chartInstance = new Chart(ctxChart, {
@@ -547,7 +732,7 @@
                     plugins: { 
                         legend: { 
                             position: 'bottom', 
-                            labels: { boxWidth: 10, font: { size: 9 } } 
+                            labels: { boxWidth: 8, font: { size: 8 } } 
                         } 
                     } 
                 }
@@ -561,19 +746,16 @@
             }
         }
 
-        // Preview Invoice Dialog Assembly
+        // Preview Bill Invoice
         function previewInvoice() {
-            // Fill Customer values
             document.getElementById('inv-cust-name').innerText = document.getElementById('custName').value || "Walk-In Customer";
             document.getElementById('inv-cust-mobile').innerText = document.getElementById('custMobile').value || "None";
             document.getElementById('inv-cust-address').innerText = document.getElementById('custAddress').value || "None";
             document.getElementById('inv-bill-no').innerText = `#RT-${billNumber}`;
 
-            // Handle date time details
             const now = new Date();
             document.getElementById('bill-date-time').innerText = `Date: ${now.toLocaleDateString()} Time: ${now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}`;
 
-            // Build dynamic items rows list
             const tbody = document.getElementById('inv-items-body');
             tbody.innerHTML = '';
             let totalAmount = 0;
@@ -587,28 +769,26 @@
 
                     tbody.innerHTML += `
                         <tr class="border-b border-gray-100">
-                            <td class="py-2.5 font-bold text-gray-800">${item}</td>
-                            <td class="py-2.5 text-center font-mono">${qty}</td>
-                            <td class="py-2.5 text-right font-mono">₹${rate}</td>
-                            <td class="py-2.5 text-right font-bold text-amber-900 font-mono">₹${amt}</td>
+                            <td class="py-1.5 font-bold text-gray-800">${item}</td>
+                            <td class="py-1.5 text-center font-mono">${qty}</td>
+                            <td class="py-1.5 text-right font-mono">₹${rate}</td>
+                            <td class="py-1.5 text-right font-bold text-amber-900 font-mono">₹${amt}</td>
                         </tr>
                     `;
                 }
             });
 
-            // Grand Total row append
             tbody.innerHTML += `
-                <tr class="font-bold text-base text-amber-900">
-                    <td colspan="3" class="pt-4 text-right">Grand Total:</td>
-                    <td class="pt-4 text-right font-mono text-lg">₹${totalAmount}</td>
+                <tr class="font-bold text-xs text-amber-900">
+                    <td colspan="3" class="pt-3 text-right">Grand Total:</td>
+                    <td class="pt-3 text-right font-mono text-sm">₹${totalAmount}</td>
                 </tr>
             `;
 
-            // Snapshot the Canvas drawings inside summary
+            // Draw current canvas strokes to popup
             const imgData = canvas.toDataURL();
             document.getElementById('inv-drawing-img').src = imgData;
 
-            // Show Popup
             document.getElementById('invoice-modal').classList.remove('hidden');
         }
 
@@ -616,14 +796,12 @@
             document.getElementById('invoice-modal').classList.add('hidden');
         }
 
-        // Perform final print action safely
         function printBillInvoice() {
             window.print();
             
-            // Increment invoice tracking
             billNumber += 1;
             
-            // Clean interface for next customer order
+            // Clear input fields
             document.getElementById('custName').value = '';
             document.getElementById('custMobile').value = '';
             document.getElementById('custEmail').value = '';
@@ -631,6 +809,9 @@
             
             selectedGarments.clear();
             garments.forEach(g => quantities[g] = 0);
+            
+            undoStack = [];
+            redoStack = [];
             
             renderGarments();
             clearCanvas();
