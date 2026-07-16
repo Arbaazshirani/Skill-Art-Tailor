@@ -105,7 +105,7 @@
 <body class="overflow-hidden h-screen flex flex-col">
 
     <!-- Top Header -->
-    <header class="no-print bg-white border-b h-12 flex items-center justify-between px-4 z-50 shadow-sm shrink-0">
+    <header class="no-print bg-white border-b h-12 flex items-center justify-between px-2 md:px-4 z-50 shadow-sm shrink-0">
         <div class="flex items-center gap-2">
             <div class="w-7 h-7 bg-amber-800 rounded-lg flex items-center justify-center text-white text-[10px] font-black tracking-tight">SAT</div>
             <div>
@@ -124,11 +124,11 @@
     <main class="flex-1 flex p-2 gap-2 overflow-hidden bg-[#fcfaf7] print-layout">
         
         <!-- BILLING SECTION (Tab Content) -->
-        <div id="tab-billing" class="tab-content flex-1 flex gap-2 overflow-hidden">
+        <div id="tab-billing" class="tab-content flex-1 flex flex-col lg:flex-row gap-2 overflow-y-auto lg:overflow-hidden w-full custom-scroll pb-10 lg:pb-0">
             
             <!-- LEFT COLUMN: Customer Details -->
-            <div class="w-[28%] bg-white p-3 rounded-xl shadow-sm border border-gray-100 flex flex-col justify-between shrink-0 h-full overflow-hidden no-print">
-                <div class="space-y-3 flex-1 overflow-y-auto custom-scroll pr-1">
+            <div class="w-full lg:w-[28%] bg-white p-3 rounded-xl shadow-sm border border-gray-100 flex flex-col justify-between shrink-0 h-auto lg:h-full lg:overflow-hidden no-print">
+                <div class="space-y-3 flex-1 overflow-visible lg:overflow-y-auto custom-scroll lg:pr-1">
                     
                     <!-- Top Compact Bar: Search and Language Selector adjusted in a single row -->
                     <div class="flex items-center justify-between gap-2 border-b pb-2 mb-1">
@@ -204,15 +204,15 @@
                 </div>
 
                 <!-- Footer Status -->
-                <div class="border-t pt-2 mt-2 flex flex-col gap-1 shrink-0">
-                    <button onclick="previewInvoice()" class="w-full bg-amber-800 hover:bg-amber-900 text-white py-1.5 rounded-lg font-bold text-[10px] shadow-sm transition-all" id="btn-submit">
+                <div class="border-t pt-3 mt-2 flex flex-col gap-1 shrink-0">
+                    <button onclick="previewInvoice()" class="w-full bg-amber-800 hover:bg-amber-900 text-white py-2 lg:py-1.5 rounded-lg font-bold text-[11px] lg:text-[10px] shadow-sm transition-all" id="btn-submit">
                         Preview & Save Bill
                     </button>
                 </div>
             </div>
 
             <!-- RIGHT COLUMN: Garment Selection & Note Pad (approx 72% Width) -->
-            <div class="w-[72%] flex flex-col gap-2 h-full overflow-hidden">
+            <div class="w-full lg:w-[72%] flex flex-col gap-2 h-auto lg:h-full overflow-visible lg:overflow-hidden shrink-0">
                 
                 <!-- TOP BLOCK: Select Garments -->
                 <div class="bg-white p-2 rounded-xl shadow-sm border border-gray-100 shrink-0 no-print">
@@ -225,8 +225,9 @@
                 </div>
 
                 <!-- BOTTOM BLOCK: Stylus Measurement Note Pad -->
-                <div id="notepad-section" class="flex-1 bg-white p-2.5 rounded-xl shadow-sm border border-gray-100 flex flex-col overflow-hidden min-h-0">
-                    <div class="flex justify-between items-center mb-1.5 shrink-0">
+                <!-- Added min-h-[400px] so it is highly usable on mobile screens -->
+                <div id="notepad-section" class="flex-1 bg-white p-2.5 rounded-xl shadow-sm border border-gray-100 flex flex-col overflow-hidden min-h-[400px] lg:min-h-0">
+                    <div class="flex justify-between items-center mb-1.5 shrink-0 flex-wrap gap-2">
                         <div class="flex items-center gap-2">
                             <h2 class="text-xs font-bold text-gray-800" id="label-notes">Measurement Note Pad</h2>
                             <!-- Realtime Field Focus Indicator -->
@@ -236,7 +237,7 @@
                         </div>
                         
                         <!-- Interactive Toolbar Pill -->
-                        <div class="flex items-center gap-1.5">
+                        <div class="flex items-center gap-1.5 flex-wrap">
                             <!-- SPECIAL HIGH-VISIBILITY OK/CONVERT BUTTON -->
                             <button id="btn-hwr-ok" onclick="convertScribbleToText()" class="hidden px-4 py-1 rounded-lg text-[9.5px] font-bold bg-emerald-600 hover:bg-emerald-700 text-white shadow-lg active:scale-95 transition-all animate-bounce flex items-center gap-1">
                                 OK ✔ Convert to Text
@@ -259,7 +260,7 @@
                                 </button>
                             </div>
 
-                            <!-- Start Measuring Trigger (Visually hidden since Auto-unlock handles it now, keeping original DOM structure intact) -->
+                            <!-- Start Measuring Trigger (Hidden as requested, Auto-unlock handles it now, DOM intact) -->
                             <button onclick="goToMeasurements()" class="hidden px-3.5 py-0.5 bg-amber-800 hover:bg-amber-900 text-white rounded-md font-bold text-[9px] shadow active:scale-95 transition-all items-center gap-1" id="btn-go-to-pad-container">
                                 <span id="btn-go-to-pad">Start Measuring</span> ✍️
                             </button>
@@ -269,21 +270,21 @@
                     </div>
 
                     <!-- Yellow Lined Stylus Notebook Canvas Area -->
-                    <div class="flex-1 border border-amber-100 rounded-lg overflow-hidden shadow-inner bg-[#fffef0] relative min-h-0">
+                    <div class="flex-1 border border-amber-100 rounded-lg overflow-hidden shadow-inner bg-[#fffef0] relative min-h-0 w-full h-full">
                         <!-- Instructions screen for handwriting overlay -->
-                        <div id="hwr-instruction-overlay" class="hidden absolute inset-0 bg-amber-950/5 backdrop-blur-[0.5px] pointer-events-none flex items-center justify-center z-10">
-                            <span class="text-[10px] text-amber-950 font-bold tracking-wider bg-white/95 px-4 py-1.5 rounded-full border border-amber-200 shadow">✍️ Write here, then tap the Green "OK ✔" button</span>
+                        <div id="hwr-instruction-overlay" class="hidden absolute inset-0 bg-amber-950/5 backdrop-blur-[0.5px] pointer-events-none flex items-center justify-center z-10 w-full h-full">
+                            <span class="text-[10px] text-amber-950 font-bold tracking-wider bg-white/95 px-4 py-1.5 rounded-full border border-amber-200 shadow text-center">✍️ Write here, then tap the Green "OK ✔" button</span>
                         </div>
 
                         <!-- Protective Lock Overlay so users see locked state clearly -->
-                        <div id="pad-lock-overlay" class="absolute inset-0 bg-[#fffef0]/85 backdrop-blur-[0.5px] flex flex-col items-center justify-center z-20 transition-all duration-200">
+                        <div id="pad-lock-overlay" class="absolute inset-0 bg-[#fffef0]/85 backdrop-blur-[0.5px] flex flex-col items-center justify-center z-20 transition-all duration-200 w-full h-full">
                             <div class="flex flex-col items-center gap-2 max-w-xs text-center p-4">
                                 <span class="text-[20px]">🔒</span>
                                 <span class="text-[10px] text-amber-900 font-extrabold tracking-wider bg-white px-3 py-1.5 rounded-full border border-amber-200 shadow-md">Measurement Pad Locked</span>
                                 <span class="text-[8px] text-gray-400 font-semibold leading-normal mt-1">Select any garment from the top bar or click on any customer field on the left to activate drawing!</span>
                             </div>
                         </div>
-                        <canvas id="measCanvas" class="handwriting-pad w-full h-full"></canvas>
+                        <canvas id="measCanvas" class="handwriting-pad w-full h-full absolute inset-0"></canvas>
                     </div>
                 </div>
 
@@ -292,7 +293,7 @@
 
         <!-- DASHBOARD SECTION (Tab Content) -->
         <div id="tab-dashboard" class="tab-content hidden flex-1 flex flex-col gap-3 overflow-hidden">
-            <div class="grid grid-cols-2 gap-3 flex-1 min-h-0 overflow-y-auto custom-scroll p-0.5">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-3 flex-1 min-h-0 overflow-y-auto custom-scroll p-0.5">
                 <!-- Pricing List -->
                 <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-100 h-fit">
                     <h2 class="text-xs font-bold mb-3 text-gray-800" id="dash-title-pricing">Pricing Management (₹)</h2>
@@ -402,7 +403,7 @@
             }
         };
 
-        // ALL 8 ORIGINAL GARMENTS RESTORED
+        // ALL 8 ORIGINAL GARMENTS PRESERVED
         const garments = ["Shirt", "Pent", "Kurta", "Payjama", "Coat", "Sherwani", "Jacket", "Waistcoat"];
         let prices = { Shirt: 350, Pent: 400, Kurta: 450, Payjama: 250, Coat: 2500, Sherwani: 4500, Jacket: 1200, Waistcoat: 800 };
         let quantities = {};
@@ -460,6 +461,11 @@
             document.getElementById('tab-' + tab).classList.remove('hidden');
             event.currentTarget.classList.add('active');
             if(tab === 'dashboard') updateChart();
+            
+            // Re-trigger resize mapping to ensure canvas stretches if tab hidden/shown on mobile
+            if(tab === 'billing') {
+                setTimeout(handleCanvasResize, 50);
+            }
         }
 
         function changeLang(lang) {
@@ -536,12 +542,15 @@
             };
         }
 
-        // AUTO LOCK/UNLOCK COORDINATION MECHANISM
+        // AUTO LOCK/UNLOCK COORDINATION MECHANISM & BUG FIX
         function updatePadState() {
             const hasSelectedGarments = selectedGarments.size > 0;
             const isFieldActive = activeFieldId !== null;
             const lockOverlay = document.getElementById('pad-lock-overlay');
             const hwrOverlay = document.getElementById('hwr-instruction-overlay');
+
+            // Force clear completely before redrawing to prevent "ghost garment" on deselect
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
 
             if (isFieldActive || hasSelectedGarments) {
                 // Unlock
@@ -561,11 +570,11 @@
                 isPadLocked = true;
                 if (lockOverlay) lockOverlay.classList.remove('hidden');
                 if (hwrOverlay) hwrOverlay.classList.add('hidden');
-                clearCanvas(); // Resolves remaining artifacts
+                clearCanvas(); 
             }
         }
 
-        // FOCUS CUSTOMER FIELDS TO START HANDWRITING (Error fixed here!)
+        // FOCUS CUSTOMER FIELDS TO START HANDWRITING
         function focusField(fieldId) {
             // Remove previous active highlights and hide all OK buttons
             document.querySelectorAll('.input-container').forEach(el => {
@@ -583,7 +592,7 @@
 
             activeFieldId = fieldId;
             
-            // Highlight the active container
+            // Highlight the active container safely
             const container = document.getElementById(fieldId).closest('.input-container');
             if (container) {
                 container.classList.add('active-field-highlight');
@@ -595,7 +604,7 @@
                 inlineOk.classList.remove('hidden');
             }
 
-            // SAFE SELECTOR FIX FOR NULL POINTER ISSUE
+            // SAFE SELECTOR FIX FOR NULL POINTER ISSUE (Resolves the previous crash)
             const labelEl = container ? container.querySelector('label') : null;
             const friendlyName = labelEl ? labelEl.innerText : 'Field';
 
@@ -609,7 +618,7 @@
             // Show instructional HWR overlay with friendly name guide
             const overlay = document.getElementById('hwr-instruction-overlay');
             if (overlay) {
-                overlay.innerHTML = `<span class="text-[11px] text-amber-950 font-bold tracking-wider bg-white/95 px-4 py-2 rounded-full border border-amber-200 shadow-md">✍️ Write "${friendlyName}" here, then click "OK ✔"</span>`;
+                overlay.innerHTML = `<span class="text-[11px] text-amber-950 font-bold tracking-wider bg-white/95 px-4 py-2 rounded-full border border-amber-200 shadow-md text-center">✍️ Write "${friendlyName}" here, then click "OK ✔"</span>`;
                 overlay.classList.remove('hidden');
             }
 
@@ -624,7 +633,9 @@
 
             // Reset local strokes for fresh recognition
             inkData = [];
-            clearCanvas();
+            
+            // Just clearing for fresh writing area
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
         }
 
         function deactivateField() {
@@ -794,7 +805,11 @@
         function initCanvas() {
             canvas = document.getElementById('measCanvas');
             ctx = canvas.getContext('2d');
-            handleCanvasResize();
+            
+            // Allow canvas parent to initialize layout sizing before first calculation
+            setTimeout(() => {
+                handleCanvasResize();
+            }, 100);
             
             // MATH PERFECT DRAWING OFFSET CALCULATION
             const getPos = (e) => {
