@@ -6,6 +6,7 @@
     <title>Skill Art Tailor - Billing & Dashboard</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap');
         
@@ -286,7 +287,6 @@
                                 </button>
                             </div>
 
-                            <button onclick="expandCanvasHeight()" class="px-2 py-0.5 text-[8px] font-bold text-amber-900 bg-amber-50 border border-amber-200 rounded-md hover:bg-amber-100 transition-all" id="btn-expand">➕ Expand Pad</button>
                             <button onclick="clearCanvas()" class="px-2 py-0.5 text-[8px] font-bold text-red-500 border border-red-100 rounded-md hover:bg-red-50" id="btn-clear-all">Clear All</button>
                         </div>
                     </div>
@@ -438,23 +438,6 @@
             updatePadState(); 
             bindSpacebarPanEvents();
         };
-
-        function expandCanvasHeight() {
-            if (!canvas) return;
-            const oldHeight = canvas.height;
-            const newHeight = oldHeight + 400;
-
-            const tempImage = new Image();
-            tempImage.src = canvas.toDataURL();
-
-            tempImage.onload = () => {
-                canvas.height = newHeight;
-                ctx.clearRect(0, 0, canvas.width, canvas.height);
-                ctx.globalCompositeOperation = 'source-over';
-                ctx.drawImage(tempImage, 0, 0);
-                showToast("📝 Note Pad expanded by 400px! Scroll down to write more.");
-            };
-        }
 
         function showToast(message) {
             let toast = document.getElementById('toast-notification');
@@ -709,19 +692,19 @@
 
         function drawLabelsOnPad() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
-            ctx.font = "bold 15px monospace";
+            ctx.font = "bold 20px monospace";
             ctx.fillStyle = '#1e293b';
             ctx.globalCompositeOperation = 'source-over';
             let currentY = 55;
             selectedGarments.forEach(item => {
-                ctx.fillText(item.toLowerCase() + ":", 25, currentY);
+                ctx.fillText(item.toUpperCase() + " MEASUREMENTS:", 25, currentY);
                 ctx.strokeStyle = '#e2e8f0';
-                ctx.lineWidth = 1;
+                ctx.lineWidth = 1.5;
                 ctx.beginPath();
-                ctx.moveTo(25, currentY + 12);
-                ctx.lineTo(canvas.width - 25, currentY + 12);
+                ctx.moveTo(25, currentY + 15);
+                ctx.lineTo(canvas.width - 25, currentY + 15);
                 ctx.stroke();
-                currentY += 135;
+                currentY += 160;
             });
         }
 
@@ -826,7 +809,12 @@
         function handleCanvasResize() { 
             if (!canvas) return; 
             const temp = canvas.toDataURL();
-            canvas.width = canvas.parentElement.clientWidth; 
+            canvas.width = canvas.offsetWidth; 
+            canvas.height = canvas.offsetHeight; 
+            
+            ctx.lineCap = 'round';
+            ctx.lineJoin = 'round';
+            
             restoreCanvas(temp);
             if (selectedGarments.size > 0 && activeFieldId === null) drawLabelsOnPad();
         }
@@ -848,7 +836,36 @@
             canvas.style.cursor = tool === 'pan' ? 'grab' : 'crosshair';
         }
         
-        function convertScribbleToText() { deactivateField(); }
+        async function convertScribbleToText() { 
+            if (!activeFieldId || !canvas) {
+                deactivateField();
+                return;
+            }
+            
+            const field = document.getElementById(activeFieldId);
+            showToast("⏳ Scanning handwriting... please wait.");
+            
+            try {
+                const result = await Tesseract.recognize(canvas, 'eng');
+                let text = result.data.text.replace(/\n/g, ' ').trim();
+                
+                if (activeFieldId === 'custMobile') {
+                    text = text.replace(/\D/g, ''); 
+                }
+                
+                if (text.length > 0) {
+                    field.value = text;
+                    showToast("✅ Text recognized and filled!");
+                } else {
+                    showToast("⚠️ Couldn't read clearly. Try writing bigger.");
+                }
+            } catch (err) {
+                console.error("OCR Error:", err);
+                showToast("❌ Recognition failed. Please use voice or keyboard.");
+            }
+            
+            deactivateField(); 
+        }
         
         function previewInvoice() { 
             document.getElementById('inv-cust-name').innerText = document.getElementById('custName').value || 'Walk-in Customer';
