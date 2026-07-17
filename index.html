@@ -16,14 +16,13 @@
             touch-action: manipulation;
         }
 
-        /* Lined yellow notebook background using CSS so erasing doesn't wipe lines */
         .handwriting-pad { 
             background: #fffef0; 
             background-image: linear-gradient(#e2e8f0 1.5px, transparent 1px);
             background-size: 100% 35px;
             background-position: 0 30px;
             cursor: crosshair; 
-            touch-action: none; /* Prevents screen scrolling/panning while drawing */
+            touch-action: none; 
         }
 
         .lang-radio:checked + label { 
@@ -32,20 +31,19 @@
             border-color: #78350f; 
         }
 
-        /* Pulsing live green dot */
         .green-dot {
             height: 10px; width: 10px; background-color: #22c55e;
             border-radius: 50%; display: inline-block;
             box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.7);
             animation: pulse-green 1.5s infinite;
         }
+        
         @keyframes pulse-green {
             0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.7); }
             70% { transform: scale(1); box-shadow: 0 0 0 5px rgba(34, 197, 94, 0); }
             100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(34, 197, 94, 0); }
         }
 
-        /* Garment cards style */
         .garment-card { 
             transition: all 0.2s ease; 
             cursor: pointer; 
@@ -82,12 +80,27 @@
             border-radius: 10px;
         }
 
+        #pad-scroll-container::-webkit-scrollbar {
+            width: 10px;
+        }
+        #pad-scroll-container::-webkit-scrollbar-track {
+            background: #fffef0;
+            border-radius: 8px;
+        }
+        #pad-scroll-container::-webkit-scrollbar-thumb {
+            background: #d97706; 
+            border: 2px solid #fffef0;
+            border-radius: 8px;
+        }
+        #pad-scroll-container::-webkit-scrollbar-thumb:hover {
+            background: #b45309;
+        }
+
         .modal-backdrop {
             background-color: rgba(0, 0, 0, 0.5);
             backdrop-filter: blur(4px);
         }
 
-        /* Active highlight for handwriting mode fields */
         .active-field-highlight {
             border: 2px solid #d97706 !important;
             background-color: #fef3c7 !important;
@@ -96,16 +109,49 @@
             box-shadow: 0 4px 6px -1px rgba(217, 119, 6, 0.1);
         }
 
+        .pad-locked { 
+            pointer-events: none; 
+            opacity: 0.6; 
+            filter: grayscale(0.8);
+            transition: all 0.3s ease;
+        }
+
         @media print { 
             .no-print { display: none !important; } 
-            .print-layout { display: block !important; height: auto !important; overflow: visible !important; }
+            body, html { 
+                background: white !important; 
+                height: auto !important; 
+                overflow: visible !important; 
+            }
+            header, main { display: none !important; }
+            #invoice-modal { 
+                position: absolute !important; 
+                inset: 0 !important; 
+                background: white !important; 
+                backdrop-filter: none !important;
+                display: block !important;
+                padding: 0 !important;
+            }
+            #invoice-modal > div {
+                box-shadow: none !important;
+                border: none !important;
+                padding: 0 !important;
+                max-width: 100% !important;
+                max-height: none !important;
+                overflow: visible !important;
+                width: 100% !important;
+            }
+            #printable-bill { 
+                border: none !important; 
+                background: white !important;
+                padding: 0 !important;
+            }
         }
     </style>
 </head>
 <body class="overflow-hidden h-screen flex flex-col">
 
-    <!-- Top Header -->
-    <header class="no-print bg-white border-b h-12 flex items-center justify-between px-2 md:px-4 z-50 shadow-sm shrink-0">
+    <header class="no-print bg-white border-b h-12 flex items-center justify-between px-4 z-50 shadow-sm shrink-0">
         <div class="flex items-center gap-2">
             <div class="w-7 h-7 bg-amber-800 rounded-lg flex items-center justify-center text-white text-[10px] font-black tracking-tight">SAT</div>
             <div>
@@ -115,30 +161,23 @@
         </div>
 
         <div class="flex gap-2 items-center">
-            <button onclick="switchTab('billing')" class="nav-tab active px-2.5 py-0.5 rounded text-[9px] font-bold border transition-all" id="nav-bill">New Bill</button>
-            <button onclick="switchTab('dashboard')" class="nav-tab px-2.5 py-0.5 rounded text-[9px] font-bold border transition-all" id="nav-dash">Dashboard</button>
+            <button onclick="switchTab('billing', this)" class="nav-tab active px-2.5 py-0.5 rounded text-[9px] font-bold border transition-all" id="nav-bill">New Bill</button>
+            <button onclick="switchTab('dashboard', this)" class="nav-tab px-2.5 py-0.5 rounded text-[9px] font-bold border transition-all" id="nav-dash">Dashboard</button>
         </div>
     </header>
 
-    <!-- MAIN WORKSPACE CONTAINER -->
-    <main class="flex-1 flex p-2 gap-2 overflow-hidden bg-[#fcfaf7] print-layout">
-        
-        <!-- BILLING SECTION (Tab Content) -->
-        <div id="tab-billing" class="tab-content flex-1 flex flex-col lg:flex-row gap-2 overflow-y-auto lg:overflow-hidden w-full custom-scroll pb-10 lg:pb-0">
+    <main class="flex-1 flex p-2 gap-2 overflow-hidden bg-[#fcfaf7]">
+        <div id="tab-billing" class="tab-content flex-1 flex flex-col lg:flex-row gap-2 overflow-hidden w-full">
             
-            <!-- LEFT COLUMN: Customer Details -->
-            <div class="w-full lg:w-[28%] bg-white p-3 rounded-xl shadow-sm border border-gray-100 flex flex-col justify-between shrink-0 h-auto lg:h-full lg:overflow-hidden no-print">
-                <div class="space-y-3 flex-1 overflow-visible lg:overflow-y-auto custom-scroll lg:pr-1">
+            <div class="w-full lg:w-[28%] bg-white p-3 rounded-xl shadow-sm border border-gray-100 flex flex-col justify-between shrink-0 h-[45%] lg:h-full overflow-hidden no-print">
+                <div class="space-y-3 flex-1 overflow-y-auto custom-scroll pr-1">
                     
-                    <!-- Top Compact Bar: Search and Language Selector adjusted in a single row -->
                     <div class="flex items-center justify-between gap-2 border-b pb-2 mb-1">
-                        <!-- Compact Search Bar next to language button -->
                         <div class="relative flex-1">
                             <input type="text" id="globalSearch" class="w-full bg-gray-50 border border-gray-200 rounded-lg py-1 px-7 text-[10px] focus:ring-1 focus:ring-amber-500 outline-none font-semibold" placeholder="Search customer records...">
                             <span class="absolute left-2 top-1.5 text-[9px] opacity-40">🔍</span>
                         </div>
                         
-                        <!-- Language Selector (Compact pill) -->
                         <div class="flex bg-gray-100 p-0.5 rounded-md border border-gray-200 shrink-0">
                             <input type="radio" name="lang" id="lang-en" value="en" class="lang-radio hidden" checked onchange="changeLang('en')">
                             <label for="lang-en" class="px-2 py-0.5 text-[8px] font-bold cursor-pointer rounded transition-all">English</label>
@@ -147,20 +186,17 @@
                         </div>
                     </div>
 
-                    <!-- Customer Fields Panel -->
                     <div class="space-y-3">
                         <div class="flex justify-between items-center">
                             <h3 class="text-[10px] font-extrabold text-gray-800 uppercase tracking-wider" id="title-part1">Customer Details</h3>
                             <span class="text-[7.5px] text-amber-800 bg-amber-50 px-1.5 py-0.5 rounded font-bold border border-amber-100">✍️ Smart Pad Active</span>
                         </div>
                         
-                        <!-- Full Name Field -->
-                        <div class="space-y-0.5 input-container cursor-pointer p-1.5 border border-transparent rounded-lg transition-all" onclick="focusField('custName')">
+                        <div class="space-y-0.5 input-container cursor-pointer p-1.5 border border-transparent rounded-lg transition-all" onclick="focusField(this, 'custName')">
                             <label class="text-[8px] font-bold text-gray-400 uppercase tracking-wider block" id="label-name">Full Name</label>
                             <div class="relative flex items-center">
                                 <input type="text" id="custName" class="w-full border-b border-gray-200 py-1 pr-24 focus:border-amber-500 outline-none font-bold text-[11px] bg-transparent" placeholder="Enter Name" readonly>
                                 <div class="absolute right-0 flex items-center gap-1" onclick="event.stopPropagation()">
-                                    <!-- Dynamic Inline OK Button -->
                                     <button id="ok-custName" onclick="convertScribbleToText()" class="hidden bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-[8.5px] px-2 py-0.5 rounded shadow active:scale-95 transition-all">OK ✔</button>
                                     <button id="mic-custName" onclick="startVoiceInput('custName')" class="text-gray-400 hover:text-amber-800 transition-colors text-[10px] p-1" title="Voice Input">🎙️</button>
                                     <button onclick="clearField('custName')" class="text-gray-300 hover:text-red-500 transition-colors text-[9px] p-1 font-bold" title="Erase">❌</button>
@@ -168,13 +204,11 @@
                             </div>
                         </div>
 
-                        <!-- Mobile Number Field -->
-                        <div class="space-y-0.5 input-container cursor-pointer p-1.5 border border-transparent rounded-lg transition-all" onclick="focusField('custMobile')">
+                        <div class="space-y-0.5 input-container cursor-pointer p-1.5 border border-transparent rounded-lg transition-all" onclick="focusField(this, 'custMobile')">
                             <label class="text-[8px] font-bold text-gray-400 uppercase tracking-wider block" id="label-mobile">Mobile Number</label>
                             <div class="relative flex items-center">
                                 <input type="tel" id="custMobile" class="w-full border-b border-gray-200 py-1 pr-24 outline-none font-mono font-bold text-[11px] bg-transparent" placeholder="Numeric Pad" readonly>
                                 <div class="absolute right-0 flex items-center gap-1" onclick="event.stopPropagation()">
-                                    <!-- Dynamic Inline OK Button -->
                                     <button id="ok-custMobile" onclick="convertScribbleToText()" class="hidden bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-[8.5px] px-2 py-0.5 rounded shadow active:scale-95 transition-all">OK ✔</button>
                                     <button id="mic-custMobile" onclick="startVoiceInput('custMobile')" class="text-gray-400 hover:text-amber-800 transition-colors text-[10px] p-1" title="Voice Input">🎙️</button>
                                     <button onclick="clearField('custMobile')" class="text-gray-300 hover:text-red-500 transition-colors text-[9px] p-1 font-bold" title="Erase">❌</button>
@@ -182,13 +216,11 @@
                             </div>
                         </div>
 
-                        <!-- Address Field -->
-                        <div class="space-y-0.5 input-container cursor-pointer p-1.5 border border-transparent rounded-lg transition-all" onclick="focusField('custAddress')">
+                        <div class="space-y-0.5 input-container cursor-pointer p-1.5 border border-transparent rounded-lg transition-all" onclick="focusField(this, 'custAddress')">
                             <label class="text-[8px] font-bold text-gray-400 uppercase tracking-wider block" id="label-address">Address</label>
                             <div class="relative flex items-center">
                                 <input type="text" id="custAddress" class="w-full border-b border-gray-200 py-1 pr-24 outline-none text-[11px] font-bold bg-transparent" placeholder="City/Area" readonly>
                                 <div class="absolute right-0 flex items-center gap-1" onclick="event.stopPropagation()">
-                                    <!-- Dynamic Inline OK Button -->
                                     <button id="ok-custAddress" onclick="convertScribbleToText()" class="hidden bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-[8.5px] px-2 py-0.5 rounded shadow active:scale-95 transition-all">OK ✔</button>
                                     <button id="mic-custAddress" onclick="startVoiceInput('custAddress')" class="text-gray-400 hover:text-amber-800 transition-colors text-[10px] p-1" title="Voice Input">🎙️</button>
                                     <button onclick="clearField('custAddress')" class="text-gray-300 hover:text-red-500 transition-colors text-[9px] p-1 font-bold" title="Erase">❌</button>
@@ -196,60 +228,54 @@
                             </div>
                         </div>
 
-                        <!-- Tip Box for Tablet Handwriting -->
                         <div class="p-2 bg-amber-50 rounded-lg border border-amber-100 text-[8px] text-amber-900 leading-normal" id="handwriting-notice">
                             <strong>How to fill:</strong> Tap on any input box, write clearly on the <strong>Note Pad</strong> on the right, then tap the pulsing <strong>"OK ✔"</strong> button to convert!
                         </div>
                     </div>
                 </div>
 
-                <!-- Footer Status -->
-                <div class="border-t pt-3 mt-2 flex flex-col gap-1 shrink-0">
-                    <button onclick="previewInvoice()" class="w-full bg-amber-800 hover:bg-amber-900 text-white py-2 lg:py-1.5 rounded-lg font-bold text-[11px] lg:text-[10px] shadow-sm transition-all" id="btn-submit">
+                <div class="border-t pt-2 mt-2 flex flex-col gap-1 shrink-0">
+                    <button onclick="previewInvoice()" class="w-full bg-amber-800 hover:bg-amber-900 text-white py-1.5 rounded-lg font-bold text-[10px] shadow-sm transition-all" id="btn-submit">
                         Preview & Save Bill
                     </button>
                 </div>
             </div>
 
-            <!-- RIGHT COLUMN: Garment Selection & Note Pad (approx 72% Width) -->
-            <div class="w-full lg:w-[72%] flex flex-col gap-2 h-auto lg:h-full overflow-visible lg:overflow-hidden shrink-0">
-                
-                <!-- TOP BLOCK: Select Garments -->
+            <div class="w-full lg:w-[72%] flex flex-col gap-2 h-[55%] lg:h-full overflow-hidden">
                 <div class="bg-white p-2 rounded-xl shadow-sm border border-gray-100 shrink-0 no-print">
                     <h2 class="text-[9px] font-bold text-gray-700 mb-1" id="title-part2">Select Garments</h2>
-                    
-                    <!-- Horizontal Scrolling Cards container (Preserved all original 8 garments) -->
                     <div class="flex gap-2 overflow-x-auto pb-1 custom-scroll" id="garment-grid">
-                        <!-- Injected dynamically via JS -->
                     </div>
                 </div>
 
-                <!-- BOTTOM BLOCK: Stylus Measurement Note Pad -->
-                <!-- Added min-h-[400px] so it is highly usable on mobile screens -->
-                <div id="notepad-section" class="flex-1 bg-white p-2.5 rounded-xl shadow-sm border border-gray-100 flex flex-col overflow-hidden min-h-[400px] lg:min-h-0">
-                    <div class="flex justify-between items-center mb-1.5 shrink-0 flex-wrap gap-2">
-                        <div class="flex items-center gap-2">
-                            <h2 class="text-xs font-bold text-gray-800" id="label-notes">Measurement Note Pad</h2>
-                            <!-- Realtime Field Focus Indicator -->
-                            <span id="active-canvas-indicator" class="hidden text-[8px] bg-amber-600 text-white font-bold px-2 py-0.5 rounded-full animate-pulse">
-                                Editing Field: None
-                            </span>
+                <div id="notepad-section" class="flex-1 bg-white p-2.5 rounded-xl shadow-sm border border-gray-100 flex flex-col overflow-hidden min-h-[300px] no-print">
+                    <div class="flex justify-between items-center mb-1 shrink-0">
+                        <div class="flex flex-col">
+                            <div class="flex items-center gap-2">
+                                <h2 class="text-xs font-bold text-gray-800" id="label-notes">Measurement Note Pad</h2>
+                                <span id="active-canvas-indicator" class="hidden text-[8px] bg-amber-600 text-white font-bold px-2 py-0.5 rounded-full animate-pulse">
+                                    Editing Field: None
+                                </span>
+                            </div>
+                            <p class="text-[8px] text-amber-800 font-semibold leading-none mt-0.5">
+                                💡 Tip: Hold <b>Spacebar</b> or <b>Middle-Click drag</b> to scroll pad anywhere instantly!
+                            </p>
                         </div>
                         
-                        <!-- Interactive Toolbar Pill -->
-                        <div class="flex items-center gap-1.5 flex-wrap">
-                            <!-- SPECIAL HIGH-VISIBILITY OK/CONVERT BUTTON -->
+                        <div class="flex items-center gap-1.5">
                             <button id="btn-hwr-ok" onclick="convertScribbleToText()" class="hidden px-4 py-1 rounded-lg text-[9.5px] font-bold bg-emerald-600 hover:bg-emerald-700 text-white shadow-lg active:scale-95 transition-all animate-bounce flex items-center gap-1">
                                 OK ✔ Convert to Text
                             </button>
 
-                            <!-- ALL ORIGINAL BUTTONS PRESERVED (Pen, Eraser, Undo, Redo) -->
                             <div class="flex items-center bg-gray-100 p-0.5 rounded-md border border-gray-200">
                                 <button id="tool-pen" onclick="setTool('pen')" class="px-2 py-0.5 rounded text-[8.5px] font-bold bg-amber-800 text-white shadow-sm transition-all" title="Pen">
                                     ✏️ Pen
                                 </button>
                                 <button id="tool-eraser" onclick="setTool('eraser')" class="px-2 py-0.5 rounded text-[8.5px] font-bold hover:bg-white text-gray-600 transition-all" title="Eraser">
                                     🧽 Eraser
+                                </button>
+                                <button id="tool-pan" onclick="setTool('pan')" class="px-2 py-0.5 rounded text-[8.5px] font-bold hover:bg-white text-gray-600 transition-all" title="Pan">
+                                    ✋ Pan
                                 </button>
                                 <div class="w-px h-3 bg-gray-300 mx-0.5"></div>
                                 <button onclick="undo()" class="px-1.5 py-0.5 rounded text-[8px] hover:bg-white text-gray-600 transition-all font-semibold" title="Undo">
@@ -260,48 +286,29 @@
                                 </button>
                             </div>
 
-                            <!-- Start Measuring Trigger (Hidden as requested, Auto-unlock handles it now, DOM intact) -->
-                            <button onclick="goToMeasurements()" class="hidden px-3.5 py-0.5 bg-amber-800 hover:bg-amber-900 text-white rounded-md font-bold text-[9px] shadow active:scale-95 transition-all items-center gap-1" id="btn-go-to-pad-container">
-                                <span id="btn-go-to-pad">Start Measuring</span> ✍️
-                            </button>
-
+                            <button onclick="expandCanvasHeight()" class="px-2 py-0.5 text-[8px] font-bold text-amber-900 bg-amber-50 border border-amber-200 rounded-md hover:bg-amber-100 transition-all" id="btn-expand">➕ Expand Pad</button>
                             <button onclick="clearCanvas()" class="px-2 py-0.5 text-[8px] font-bold text-red-500 border border-red-100 rounded-md hover:bg-red-50" id="btn-clear-all">Clear All</button>
                         </div>
                     </div>
 
-                    <!-- Yellow Lined Stylus Notebook Canvas Area -->
-                    <div class="flex-1 border border-amber-100 rounded-lg overflow-hidden shadow-inner bg-[#fffef0] relative min-h-0 w-full h-full">
-                        <!-- Instructions screen for handwriting overlay -->
-                        <div id="hwr-instruction-overlay" class="hidden absolute inset-0 bg-amber-950/5 backdrop-blur-[0.5px] pointer-events-none flex items-center justify-center z-10 w-full h-full">
-                            <span class="text-[10px] text-amber-950 font-bold tracking-wider bg-white/95 px-4 py-1.5 rounded-full border border-amber-200 shadow text-center">✍️ Write here, then tap the Green "OK ✔" button</span>
+                    <div id="pad-scroll-container" class="flex-1 border border-amber-100 rounded-lg overflow-y-auto overflow-x-hidden shadow-inner bg-[#fffef0] relative min-h-0">
+                        <div id="pad-overlay" class="absolute inset-0 bg-gray-200/50 z-10 flex flex-col items-center justify-center pointer-events-none transition-opacity duration-300">
+                            <span class="text-3xl mb-2">🔒</span>
+                            <span class="text-xs font-bold text-gray-600 bg-white/80 px-3 py-1 rounded-full shadow-sm">Select a garment or tap a field to unlock pad</span>
                         </div>
-
-                        <!-- Protective Lock Overlay so users see locked state clearly -->
-                        <div id="pad-lock-overlay" class="absolute inset-0 bg-[#fffef0]/85 backdrop-blur-[0.5px] flex flex-col items-center justify-center z-20 transition-all duration-200 w-full h-full">
-                            <div class="flex flex-col items-center gap-2 max-w-xs text-center p-4">
-                                <span class="text-[20px]">🔒</span>
-                                <span class="text-[10px] text-amber-900 font-extrabold tracking-wider bg-white px-3 py-1.5 rounded-full border border-amber-200 shadow-md">Measurement Pad Locked</span>
-                                <span class="text-[8px] text-gray-400 font-semibold leading-normal mt-1">Select any garment from the top bar or click on any customer field on the left to activate drawing!</span>
-                            </div>
-                        </div>
-                        <canvas id="measCanvas" class="handwriting-pad w-full h-full absolute inset-0"></canvas>
+                        <canvas id="measCanvas" class="handwriting-pad w-full pad-locked" style="height: 1200px; display: block;"></canvas>
                     </div>
                 </div>
-
             </div>
         </div>
 
-        <!-- DASHBOARD SECTION (Tab Content) -->
-        <div id="tab-dashboard" class="tab-content hidden flex-1 flex flex-col gap-3 overflow-hidden">
+        <div id="tab-dashboard" class="tab-content hidden flex-1 flex flex-col gap-3 overflow-hidden no-print">
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-3 flex-1 min-h-0 overflow-y-auto custom-scroll p-0.5">
-                <!-- Pricing List -->
                 <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-100 h-fit">
                     <h2 class="text-xs font-bold mb-3 text-gray-800" id="dash-title-pricing">Pricing Management (₹)</h2>
                     <div id="pricing-list" class="space-y-2">
-                        <!-- Injected via JS -->
                     </div>
                 </div>
-                <!-- Pricing Distribution Stats Graph -->
                 <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-100 h-fit flex flex-col items-center">
                     <h2 class="text-xs font-bold mb-3 text-gray-800 self-start" id="dash-title-stats">Stitch Price Stats</h2>
                     <div class="chart-container w-full">
@@ -310,19 +317,15 @@
                 </div>
             </div>
         </div>
-
     </main>
 
-    <!-- INVOICE PREVIEW MODAL -->
-    <div id="invoice-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-3 modal-backdrop no-print">
+    <div id="invoice-modal" class="hidden fixed inset-0 z-[100] flex items-center justify-center p-3 modal-backdrop">
         <div class="bg-white rounded-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto custom-scroll p-4 shadow-2xl flex flex-col border border-gray-100">
-            <!-- Modal Header -->
-            <div class="flex justify-between items-center border-b pb-2 mb-3">
+            <div class="flex justify-between items-center border-b pb-2 mb-3 no-print">
                 <h3 class="text-xs font-bold text-amber-900" id="invoice-preview-title">Bill Invoice Summary</h3>
                 <button onclick="closeInvoiceModal()" class="text-gray-400 hover:text-gray-600 font-bold text-base">&times;</button>
             </div>
 
-            <!-- Printable Bill Layout -->
             <div id="printable-bill" class="bg-[#fafaf9] p-4 rounded-xl border border-gray-200 flex-1">
                 <div class="text-center mb-4">
                     <h2 class="text-xl font-extrabold text-amber-900 tracking-wide">SKILL ART TAILOR</h2>
@@ -330,7 +333,6 @@
                     <p class="text-[9px] text-gray-400" id="bill-date-time">Date: --/--/---- Time: --:--</p>
                 </div>
 
-                <!-- Customer Details -->
                 <div class="grid grid-cols-2 gap-2 border-b pb-2 mb-2 text-xs">
                     <div>
                         <p class="text-[8px] uppercase font-bold text-gray-400">Bill To:</p>
@@ -344,7 +346,6 @@
                     </div>
                 </div>
 
-                <!-- Table Content -->
                 <table class="w-full text-xs mb-4">
                     <thead>
                         <tr class="border-b-2 border-gray-300 text-gray-500 font-semibold text-left">
@@ -355,11 +356,9 @@
                         </tr>
                     </thead>
                     <tbody id="inv-items-body" class="divide-y divide-gray-100 text-gray-700 font-semibold">
-                        <!-- Injected via JS -->
                     </tbody>
                 </table>
 
-                <!-- Drawing Snapshot -->
                 <div class="mt-2 border-t pt-2">
                     <p class="text-[9px] font-bold text-gray-400 uppercase mb-1">Stylus Measurement Record:</p>
                     <div class="border rounded-lg overflow-hidden bg-[#fffef0] max-h-40 flex items-center justify-center">
@@ -368,8 +367,7 @@
                 </div>
             </div>
 
-            <!-- Modal Action Buttons -->
-            <div class="mt-3 flex justify-end gap-2 pt-2 border-t">
+            <div class="mt-3 flex justify-end gap-2 pt-2 border-t no-print">
                 <button onclick="closeInvoiceModal()" class="px-4 py-1.5 rounded-lg text-xs font-bold bg-gray-100 hover:bg-gray-200 text-gray-700 transition-all">
                     Edit Details ✏️
                 </button>
@@ -380,7 +378,6 @@
         </div>
     </div>
 
-    <!-- SCRIPT LOGIC -->
     <script>
         const i18n = {
             hi: {
@@ -388,7 +385,7 @@
                 titlePart2: "कपड़े चुनें", labelName: "ग्राहक का नाम", labelMobile: "मोबाइल नंबर",
                 labelAddress: "पता", labelNotes: "माप नोटपैड (Stylus)",
                 btnSubmit: "बिल समरी देखें", headerSub: "डिजिटल रिकॉर्ड",
-                searchPlaceholder: "ग्राहक खोजें...", btnGoToPad: "माप शुरू करें",
+                searchPlaceholder: "ग्राहक खोजें...", 
                 dashPricing: "रेट मैनेजमेंट", dashStats: "मूल्य वितरण",
                 btnClearAll: "साफ करें", invoicePreviewTitle: "इनवॉइस समरी"
             },
@@ -397,13 +394,12 @@
                 titlePart2: "Select Garments", labelName: "Full Name", labelMobile: "Mobile Number",
                 labelAddress: "Address", labelNotes: "Measurement Note Pad",
                 btnSubmit: "Preview & Save Bill", headerSub: "Digital Billing System",
-                searchPlaceholder: "Search customer records...", btnGoToPad: "Start Measuring",
+                searchPlaceholder: "Search customer records...", 
                 dashPricing: "Pricing Management", dashStats: "Stitch Price Stats",
                 btnClearAll: "Clear All", invoicePreviewTitle: "Bill Invoice Summary"
             }
         };
 
-        // ALL 8 ORIGINAL GARMENTS PRESERVED
         const garments = ["Shirt", "Pent", "Kurta", "Payjama", "Coat", "Sherwani", "Jacket", "Waistcoat"];
         let prices = { Shirt: 350, Pent: 400, Kurta: 450, Payjama: 250, Coat: 2500, Sherwani: 4500, Jacket: 1200, Waistcoat: 800 };
         let quantities = {};
@@ -411,61 +407,128 @@
         let currentLang = 'en';
         let chartInstance = null;
         let billNumber = 1001;
-
-        // Tool & Drawing States
         let drawing = false;
         let canvas, ctx;
-        let activeTool = 'pen'; // 'pen' or 'eraser'
-        
-        // Undo/Redo Stacks
+        let activeTool = 'pen'; 
         let undoStack = [];
         let redoStack = [];
         const maxStates = 20;
-
-        // Smart state for padlock mechanism
-        let isPadLocked = true;
-
-        // Active Column for Handwriting Scribble-to-Text
         let activeFieldId = null;
+        let isPadLocked = true; 
+        let isTwoFingerErasing = false; 
 
-        // Stroke tracking variables for Google Handwriting API
-        let currentStrokeX = [];
-        let currentStrokeY = [];
-        let currentStrokeT = [];
-        let inkData = []; // Array of [[[X...], [Y...], [T...]], ...]
-        let strokeStartTime = 0;
+        let isPanning = false;
+        let isMiddleClickPanning = false;
+        let isSpacePressed = false;
+        let panStartX = 0;
+        let panStartY = 0;
+        let scrollStartX = 0;
+        let scrollStartY = 0;
 
         window.onload = () => {
             garments.forEach(g => quantities[g] = 0);
-            
             renderGarments();
             renderPricingDashboard();
             initCanvas();
             initChart();
-            changeLang('en'); // Defaults to English
-            
+            changeLang('en'); 
             window.addEventListener('resize', handleCanvasResize);
-
-            // Save initial blank state
-            if (canvas) {
-                undoStack.push(canvas.toDataURL());
-            }
-
-            // Explicit state refresh
-            updatePadState();
+            if (canvas) undoStack.push(canvas.toDataURL());
+            
+            updatePadState(); 
+            bindSpacebarPanEvents();
         };
 
-        function switchTab(tab) {
+        function expandCanvasHeight() {
+            if (!canvas) return;
+            const oldHeight = canvas.height;
+            const newHeight = oldHeight + 400;
+
+            const tempImage = new Image();
+            tempImage.src = canvas.toDataURL();
+
+            tempImage.onload = () => {
+                canvas.height = newHeight;
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                ctx.globalCompositeOperation = 'source-over';
+                ctx.drawImage(tempImage, 0, 0);
+                showToast("📝 Note Pad expanded by 400px! Scroll down to write more.");
+            };
+        }
+
+        function showToast(message) {
+            let toast = document.getElementById('toast-notification');
+            if (!toast) {
+                toast = document.createElement('div');
+                toast.id = 'toast-notification';
+                toast.className = 'fixed bottom-4 right-4 bg-amber-900 text-white px-3 py-1.5 rounded-lg shadow-lg text-[10px] font-bold z-[200] transition-opacity duration-300 pointer-events-none opacity-0';
+                document.body.appendChild(toast);
+            }
+            toast.innerText = message;
+            toast.classList.remove('opacity-0');
+            toast.classList.add('opacity-100');
+            setTimeout(() => {
+                toast.classList.remove('opacity-100');
+                toast.classList.add('opacity-0');
+            }, 2500);
+        }
+
+        function bindSpacebarPanEvents() {
+            window.addEventListener('keydown', (e) => {
+                if (e.code === 'Space' && document.activeElement.tagName !== 'INPUT' && document.activeElement.tagName !== 'TEXTAREA') {
+                    e.preventDefault();
+                    if (!isSpacePressed) {
+                        isSpacePressed = true;
+                        setTool('pan');
+                    }
+                }
+            });
+
+            window.addEventListener('keyup', (e) => {
+                if (e.code === 'Space') {
+                    if (isSpacePressed) {
+                        isSpacePressed = false;
+                        setTool('pen');
+                    }
+                }
+            });
+        }
+
+        function updatePadState() {
+            const hasGarments = selectedGarments.size > 0;
+            const isFieldActive = activeFieldId !== null;
+            const overlay = document.getElementById('pad-overlay');
+            const canvasEl = document.getElementById('measCanvas');
+            
+            if (hasGarments || isFieldActive) {
+                isPadLocked = false;
+                canvasEl.classList.remove('pad-locked');
+                overlay.style.opacity = '0';
+                setTimeout(() => { if(!isPadLocked) overlay.classList.add('hidden'); }, 300);
+                
+                if (hasGarments && !isFieldActive) {
+                    drawLabelsOnPad();
+                }
+            } else {
+                isPadLocked = true;
+                canvasEl.classList.add('pad-locked');
+                overlay.classList.remove('hidden');
+                setTimeout(() => { overlay.style.opacity = '1'; }, 10);
+                clearCanvas();
+            }
+        }
+
+        function switchTab(tab, btn) {
             document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
             document.querySelectorAll('.nav-tab').forEach(el => el.classList.remove('active'));
             document.getElementById('tab-' + tab).classList.remove('hidden');
-            event.currentTarget.classList.add('active');
-            if(tab === 'dashboard') updateChart();
-            
-            // Re-trigger resize mapping to ensure canvas stretches if tab hidden/shown on mobile
-            if(tab === 'billing') {
-                setTimeout(handleCanvasResize, 50);
+            if(btn) {
+                btn.classList.add('active');
+            } else {
+                if (tab === 'billing') document.getElementById('nav-bill').classList.add('active');
+                if (tab === 'dashboard') document.getElementById('nav-dash').classList.add('active');
             }
+            if(tab === 'dashboard') updateChart();
         }
 
         function changeLang(lang) {
@@ -480,7 +543,6 @@
             document.getElementById('label-mobile').innerText = t.labelMobile;
             document.getElementById('label-address').innerText = t.labelAddress;
             document.getElementById('label-notes').innerText = t.labelNotes;
-            document.getElementById('btn-go-to-pad').innerText = t.btnGoToPad;
             document.getElementById('btn-submit').innerText = t.btnSubmit;
             document.getElementById('globalSearch').placeholder = t.searchPlaceholder;
             document.getElementById('dash-title-pricing').innerText = t.dashPricing;
@@ -490,271 +552,193 @@
             renderGarments();
         }
 
-        // Fast Clear (❌) field handler
         function clearField(fieldId) {
             document.getElementById(fieldId).value = '';
-            // If the field cleared is the active one, clear canvas and reset ink arrays
-            if (activeFieldId === fieldId) {
-                clearCanvas();
-            }
+            if (activeFieldId === fieldId) clearCanvas();
         }
 
-        // Speech-to-Text Feature (Hands-free Voice Input)
         function startVoiceInput(fieldId) {
             const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-            if (!SpeechRecognition) {
-                showToast("Voice typing is only supported in Android Chrome.");
-                return;
-            }
-
+            if (!SpeechRecognition) return;
             const recognition = new SpeechRecognition();
             recognition.lang = currentLang === 'hi' ? 'hi-IN' : 'en-US';
-            recognition.interimResults = false;
-            recognition.maxAlternatives = 1;
-
-            const micBtn = document.getElementById(`mic-${fieldId}`);
-            if (micBtn) {
-                micBtn.classList.add('animate-pulse', 'text-red-500');
-            }
-
             recognition.start();
-
             recognition.onresult = (event) => {
                 const speechResult = event.results[0][0].transcript;
                 const field = document.getElementById(fieldId);
-                
-                if (fieldId === 'custMobile') {
-                    const cleanedNum = speechResult.replace(/\D/g, '');
-                    field.value = cleanedNum;
-                } else {
-                    field.value = speechResult;
-                }
-            };
-
-            recognition.onerror = (event) => {
-                console.error("Speech Recognition Error: ", event.error);
-            };
-
-            recognition.onend = () => {
-                if (micBtn) {
-                    micBtn.classList.remove('animate-pulse', 'text-red-500');
-                }
+                field.value = fieldId === 'custMobile' ? speechResult.replace(/\D/g, '') : speechResult;
             };
         }
 
-        // AUTO LOCK/UNLOCK COORDINATION MECHANISM & BUG FIX
-        function updatePadState() {
-            const hasSelectedGarments = selectedGarments.size > 0;
-            const isFieldActive = activeFieldId !== null;
-            const lockOverlay = document.getElementById('pad-lock-overlay');
-            const hwrOverlay = document.getElementById('hwr-instruction-overlay');
-
-            // Force clear completely before redrawing to prevent "ghost garment" on deselect
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-            if (isFieldActive || hasSelectedGarments) {
-                // Unlock
-                isPadLocked = false;
-                if (lockOverlay) lockOverlay.classList.add('hidden');
-
-                if (isFieldActive) {
-                    // Active typing/writing mode for specific customer field (Free layout sketch)
-                    if (hwrOverlay) hwrOverlay.classList.remove('hidden');
-                } else {
-                    // Measurement labels drafting mode
-                    if (hwrOverlay) hwrOverlay.classList.add('hidden');
-                    drawLabelsOnPad();
-                }
-            } else {
-                // Fully Lock
-                isPadLocked = true;
-                if (lockOverlay) lockOverlay.classList.remove('hidden');
-                if (hwrOverlay) hwrOverlay.classList.add('hidden');
-                clearCanvas(); 
-            }
-        }
-
-        // FOCUS CUSTOMER FIELDS TO START HANDWRITING
-        function focusField(fieldId) {
-            // Remove previous active highlights and hide all OK buttons
-            document.querySelectorAll('.input-container').forEach(el => {
-                el.classList.remove('active-field-highlight');
-            });
-            document.querySelectorAll('[id^="ok-"]').forEach(el => {
-                el.classList.add('hidden');
-            });
-
-            // If we clicked on the already active field, toggle it off
-            if (activeFieldId === fieldId) {
-                deactivateField();
-                return;
-            }
-
+        function focusField(containerElement, fieldId) {
+            document.querySelectorAll('.input-container').forEach(el => el.classList.remove('active-field-highlight'));
+            document.querySelectorAll('[id^="ok-"]').forEach(el => el.classList.add('hidden'));
+            
+            if (activeFieldId === fieldId) { deactivateField(); return; }
+            
             activeFieldId = fieldId;
+            containerElement.classList.add('active-field-highlight');
+            document.getElementById(`ok-${fieldId}`).classList.remove('hidden');
             
-            // Highlight the active container safely
-            const container = document.getElementById(fieldId).closest('.input-container');
-            if (container) {
-                container.classList.add('active-field-highlight');
-            }
-
-            // Show dynamic inline OK button inside customer detail panel
-            const inlineOk = document.getElementById(`ok-${fieldId}`);
-            if (inlineOk) {
-                inlineOk.classList.remove('hidden');
-            }
-
-            // SAFE SELECTOR FIX FOR NULL POINTER ISSUE (Resolves the previous crash)
-            const labelEl = container ? container.querySelector('label') : null;
-            const friendlyName = labelEl ? labelEl.innerText : 'Field';
-
-            // Set canvas visual guides
-            const activeIndicator = document.getElementById('active-canvas-indicator');
-            if (activeIndicator) {
-                activeIndicator.classList.remove('hidden');
-                activeIndicator.innerText = `Smart Fill Active: ${friendlyName}`;
-            }
-
-            // Show instructional HWR overlay with friendly name guide
-            const overlay = document.getElementById('hwr-instruction-overlay');
-            if (overlay) {
-                overlay.innerHTML = `<span class="text-[11px] text-amber-950 font-bold tracking-wider bg-white/95 px-4 py-2 rounded-full border border-amber-200 shadow-md text-center">✍️ Write "${friendlyName}" here, then click "OK ✔"</span>`;
-                overlay.classList.remove('hidden');
-            }
-
-            // Show Main OK button inside drawing toolbar, hide Start Measuring to focus detail typing
-            const btnHwrOk = document.getElementById('btn-hwr-ok');
-            if (btnHwrOk) {
-                btnHwrOk.classList.remove('hidden');
-            }
-
-            // Refresh lock states
+            let labelText = containerElement.querySelector('label').innerText;
+            const indicator = document.getElementById('active-canvas-indicator');
+            indicator.classList.remove('hidden');
+            indicator.innerText = `Smart Fill: ${labelText}`;
+            
+            clearCanvas();
             updatePadState();
-
-            // Reset local strokes for fresh recognition
-            inkData = [];
-            
-            // Just clearing for fresh writing area
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
         }
 
         function deactivateField() {
-            document.querySelectorAll('.input-container').forEach(el => {
-                el.classList.remove('active-field-highlight');
-            });
-            document.querySelectorAll('[id^="ok-"]').forEach(el => {
-                el.classList.add('hidden');
-            });
+            document.querySelectorAll('.input-container').forEach(el => el.classList.remove('active-field-highlight'));
+            document.querySelectorAll('[id^="ok-"]').forEach(el => el.classList.add('hidden'));
             activeFieldId = null;
-            
-            const activeIndicator = document.getElementById('active-canvas-indicator');
-            if (activeIndicator) activeIndicator.classList.add('hidden');
-            
-            const overlay = document.getElementById('hwr-instruction-overlay');
-            if (overlay) overlay.classList.add('hidden');
-
-            const btnHwrOk = document.getElementById('btn-hwr-ok');
-            if (btnHwrOk) {
-                btnHwrOk.classList.add('hidden');
-            }
-            inkData = [];
-
-            // Reset to measurement or lock state
-            updatePadState();
+            document.getElementById('active-canvas-indicator').classList.add('hidden');
+            updatePadState(); 
         }
 
-        // GOOGLE IME HANDWRITING API RECOGNITION (Teaching Digital Board auto-correct mechanism)
-        function convertScribbleToText() {
-            if (!activeFieldId || inkData.length === 0) {
-                showToast("Please write clearly on the notepad first!");
-                return;
-            }
-
-            const fieldToFill = document.getElementById(activeFieldId);
-            fieldToFill.placeholder = "Recognizing... ⏳";
-
-            // Determine language code for IME
-            let languageCode = "en";
-            if (currentLang === "hi") {
-                languageCode = "hi";
-            }
-
-            const url = `https://inputtools.google.com/request?itc=${languageCode}-t-i0-handwrit&app=demopage`;
-
-            const payload = {
-                app_version: 0.4,
-                api_level: "53.0.3220.0",
-                device: "5.0",
-                input_type: "0",
-                options: "enable_pre_space",
-                requests: [
-                    {
-                        writing_guide: {
-                            width: canvas.width,
-                            height: canvas.height
-                        },
-                        pre_context: "",
-                        max_num_results: 3,
-                        max_completions: 0,
-                        language: languageCode,
-                        ink: inkData
-                    }
-                ]
-            };
-
-            fetch(url, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify(payload)
-            })
-            .then(res => res.json())
-            .then(data => {
-                if (data && data[0] === "SUCCESS") {
-                    const candidateList = data[1][0][1];
-                    if (candidateList && candidateList.length > 0) {
-                        let recognizedText = candidateList[0];
-                        
-                        // Numeric auto-correct constraint for mobile phone input
-                        if (activeFieldId === 'custMobile') {
-                            recognizedText = recognizedText.replace(/\D/g, ''); // strip non-numeric
-                        }
-
-                        fieldToFill.value = recognizedText;
-                    } else {
-                        showToast("Could not recognize text. Please write again.");
-                    }
-                } else {
-                    showToast("Server error. Try Voice typing!");
+        function initCanvas() {
+            canvas = document.getElementById('measCanvas');
+            ctx = canvas.getContext('2d');
+            handleCanvasResize();
+            
+            canvas.addEventListener('pointerdown', (e) => {
+                if (isPadLocked) return;
+                
+                if (e.button === 1) {
+                    e.preventDefault();
+                    isMiddleClickPanning = true;
+                    isPanning = true;
+                    panStartX = e.clientX;
+                    panStartY = e.clientY;
+                    const container = document.getElementById('pad-scroll-container');
+                    scrollStartX = container.scrollLeft;
+                    scrollStartY = container.scrollTop;
+                    canvas.style.cursor = 'grabbing';
+                    return;
                 }
-                resetRecognitionPlaceholder();
-                deactivateField();
-            })
-            .catch(err => {
-                console.error("Handwriting API Error: ", err);
-                showToast("Connection issue. Please use Mic (🎙️) or touch keyboards!");
-                resetRecognitionPlaceholder();
-                deactivateField();
+
+                if (activeTool === 'pan') {
+                    isPanning = true;
+                    panStartX = e.clientX;
+                    panStartY = e.clientY;
+                    const container = document.getElementById('pad-scroll-container');
+                    scrollStartX = container.scrollLeft;
+                    scrollStartY = container.scrollTop;
+                    canvas.style.cursor = 'grabbing';
+                    return;
+                }
+
+                if (e.pointerType === 'touch' && !e.isPrimary) return;
+                
+                saveState();
+                drawing = true;
+                const rect = canvas.getBoundingClientRect();
+                const scaleX = canvas.width / rect.width;
+                const scaleY = canvas.height / rect.height;
+                const posX = (e.clientX - rect.left) * scaleX;
+                const posY = (e.clientY - rect.top) * scaleY;
+                
+                ctx.beginPath();
+                ctx.moveTo(posX, posY);
+            });
+            
+            canvas.addEventListener('pointermove', (e) => { 
+                if (isPanning) {
+                    e.preventDefault();
+                    const container = document.getElementById('pad-scroll-container');
+                    const dx = e.clientX - panStartX;
+                    const dy = e.clientY - panStartY;
+                    container.scrollLeft = scrollStartX - dx;
+                    container.scrollTop = scrollStartY - dy;
+                    return;
+                }
+
+                if (!drawing || isPadLocked) return; 
+                e.preventDefault(); 
+                
+                const rect = canvas.getBoundingClientRect();
+                const scaleX = canvas.width / rect.width;
+                const scaleY = canvas.height / rect.height;
+                const posX = (e.clientX - rect.left) * scaleX;
+                const posY = (e.clientY - rect.top) * scaleY;
+
+                const useEraser = activeTool === 'eraser' || isTwoFingerErasing;
+                ctx.globalCompositeOperation = useEraser ? 'destination-out' : 'source-over';
+                ctx.lineWidth = useEraser ? 25 : 2.5;
+                ctx.strokeStyle = '#0f172a';
+                ctx.lineCap = 'round';
+                ctx.lineJoin = 'round';
+                
+                ctx.lineTo(posX, posY); 
+                ctx.stroke(); 
+            });
+            
+            canvas.addEventListener('pointerup', (e) => {
+                if (isPanning) {
+                    isPanning = false;
+                    isMiddleClickPanning = false;
+                    canvas.style.cursor = activeTool === 'pan' ? 'grab' : 'crosshair';
+                    return;
+                }
+                if (drawing) drawing = false; 
+            });
+
+            canvas.addEventListener('pointercancel', () => { 
+                if (isPanning) {
+                    isPanning = false;
+                    isMiddleClickPanning = false;
+                    canvas.style.cursor = activeTool === 'pan' ? 'grab' : 'crosshair';
+                    return;
+                }
+                drawing = false; 
+            });
+
+            canvas.addEventListener('touchstart', (e) => {
+                if(e.touches.length >= 2) {
+                    isTwoFingerErasing = true;
+                }
+            }, {passive: false});
+
+            canvas.addEventListener('touchend', (e) => {
+                if(isTwoFingerErasing && e.touches.length < 2) {
+                    isTwoFingerErasing = false;
+                }
             });
         }
 
-        function resetRecognitionPlaceholder() {
-            document.getElementById('custName').placeholder = "Enter Name";
-            document.getElementById('custMobile').placeholder = "Numeric Pad";
-            document.getElementById('custAddress').placeholder = "City/Area";
+        function drawLabelsOnPad() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.font = "bold 15px monospace";
+            ctx.fillStyle = '#1e293b';
+            ctx.globalCompositeOperation = 'source-over';
+            let currentY = 55;
+            selectedGarments.forEach(item => {
+                ctx.fillText(item.toLowerCase() + ":", 25, currentY);
+                ctx.strokeStyle = '#e2e8f0';
+                ctx.lineWidth = 1;
+                ctx.beginPath();
+                ctx.moveTo(25, currentY + 12);
+                ctx.lineTo(canvas.width - 25, currentY + 12);
+                ctx.stroke();
+                currentY += 135;
+            });
         }
 
-        // Renders horizontal scrolling items list
+        function clearCanvas() {
+            if(!ctx) return;
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+        }
+
         function renderGarments() {
             const grid = document.getElementById('garment-grid');
             grid.innerHTML = garments.map(item => `
                 <div id="card-${item}" onclick="toggleSelection('${item}')" class="garment-card p-1 rounded-lg bg-white flex flex-col justify-between w-28 shrink-0 shadow-sm relative select-none ${selectedGarments.has(item) ? 'selected' : ''}">
-                    <div class="flex justify-between items-start gap-1">
+                    <div class="flex justify-between items-start gap-1 pointer-events-none">
                         <span class="text-[8.5px] font-bold text-gray-700 leading-tight">${item}</span>
                         ${selectedGarments.has(item) ? '<span class="green-dot shrink-0"></span>' : '<span class="w-1.5 h-1.5 border rounded-full border-gray-200 shrink-0"></span>'}
                     </div>
-                    <div class="flex items-center justify-between bg-gray-50 rounded p-0.5 mt-1" onclick="event.stopPropagation()">
+                    <div class="flex items-center justify-between bg-gray-50 rounded p-0.5 mt-1 pointer-events-auto" onclick="event.stopPropagation()">
                         <button onclick="updateQty('${item}', -1)" class="w-4 h-4 rounded bg-white shadow-sm flex items-center justify-center font-bold text-gray-400 hover:text-amber-800 transition-colors text-[9px]">-</button>
                         <span class="font-mono font-bold text-amber-900 text-[9px]">${quantities[item]}</span>
                         <button onclick="updateQty('${item}', 1)" class="w-4 h-4 rounded bg-white shadow-sm flex items-center justify-center font-bold text-gray-400 hover:text-amber-800 transition-colors text-[9px]">+</button>
@@ -772,20 +756,15 @@
                 quantities[item] = 1;
             }
             renderGarments();
-            // Automatically triggers Lock/Unlock + renders live labels
-            updatePadState();
+            updatePadState(); 
         }
 
         function updateQty(item, delta) {
             quantities[item] = Math.max(0, quantities[item] + delta);
-            if(quantities[item] > 0) {
-                selectedGarments.add(item);
-            } else {
-                selectedGarments.delete(item);
-            }
+            if(quantities[item] > 0) selectedGarments.add(item);
+            else selectedGarments.delete(item);
             renderGarments();
-            // Automatically triggers Lock/Unlock + renders live labels
-            updatePadState();
+            updatePadState(); 
         }
 
         function renderPricingDashboard() {
@@ -793,291 +772,18 @@
             list.innerHTML = garments.map(item => `
                 <div class="flex justify-between items-center p-1.5 bg-gray-50 rounded-lg border border-gray-100 text-xs">
                     <span class="font-bold text-gray-600">${item}</span>
-                    <div class="flex items-center gap-1.5">
-                        <span class="text-[10px] text-gray-400">₹</span>
-                        <input type="number" value="${prices[item]}" onchange="prices['${item}']=parseInt(this.value)" class="w-16 text-right border rounded px-1.5 py-0.5 font-mono outline-amber-500 text-[10px]">
-                    </div>
+                    <input type="number" value="${prices[item]}" onchange="prices['${item}']=parseInt(this.value)" class="w-16 text-right border rounded px-1.5 py-0.5 font-mono text-[10px]">
                 </div>
             `).join('');
         }
 
-        // Advanced Canvas & Tool Configuration with perfect stylus precision math
-        function initCanvas() {
-            canvas = document.getElementById('measCanvas');
-            ctx = canvas.getContext('2d');
-            
-            // Allow canvas parent to initialize layout sizing before first calculation
-            setTimeout(() => {
-                handleCanvasResize();
-            }, 100);
-            
-            // MATH PERFECT DRAWING OFFSET CALCULATION
-            const getPos = (e) => {
-                const rect = canvas.getBoundingClientRect();
-                const x = (e.clientX - rect.left) * (canvas.width / rect.width);
-                const y = (e.clientY - rect.top) * (canvas.height / rect.height);
-                return { x, y };
-            };
-
-            let isPointerEraser = false;
-            let twoFingerErasing = false;
-
-            const start = (e) => {
-                if (isPadLocked) return; // Completely prevents drawing if locked
-
-                if (e.pointerType === 'touch' && !e.isPrimary) return;
-                
-                saveState(); // Saves state BEFORE stroke for Undo capability
-                drawing = true; 
-                
-                isPointerEraser = (e.pointerType === 'pen' && (e.buttons === 32 || e.button === 5));
-                
-                const pos = getPos(e); 
-                ctx.beginPath(); 
-                ctx.moveTo(pos.x, pos.y); 
-
-                // Smartboard stroke recording initial states
-                strokeStartTime = Date.now();
-                currentStrokeX = [Math.round(pos.x)];
-                currentStrokeY = [Math.round(pos.y)];
-                currentStrokeT = [0];
-                
-                if (e.pointerType === 'touch' || e.pointerType === 'pen') {
-                    canvas.setPointerCapture(e.pointerId);
-                }
-
-                // If user is writing, hide instruction overlay
-                const hwrOverlay = document.getElementById('hwr-instruction-overlay');
-                if (hwrOverlay) {
-                    hwrOverlay.classList.add('hidden');
-                }
-            };
-            
-            const draw = (e) => { 
-                if (!drawing || isPadLocked) return; 
-                e.preventDefault(); 
-                const pos = getPos(e); 
-                
-                const useEraser = activeTool === 'eraser' || isPointerEraser || twoFingerErasing || (e.pointerType === 'pen' && e.buttons === 32);
-                
-                if (useEraser) {
-                    ctx.globalCompositeOperation = 'destination-out';
-                    ctx.lineWidth = twoFingerErasing ? 40 : 25; 
-                } else {
-                    ctx.globalCompositeOperation = 'source-over';
-                    ctx.lineWidth = 2.5;
-                    ctx.strokeStyle = '#0f172a';
-                }
-                
-                ctx.lineTo(pos.x, pos.y); 
-                ctx.stroke(); 
-
-                // Append coordinates to recognition matrix
-                currentStrokeX.push(Math.round(pos.x));
-                currentStrokeY.push(Math.round(pos.y));
-                currentStrokeT.push(Date.now() - strokeStartTime);
-            };
-            
-            const stop = (e) => {
-                if (drawing) {
-                    drawing = false; 
-                    isPointerEraser = false;
-                    twoFingerErasing = false;
-
-                    // Push completed stroke into API stroke container
-                    if (currentStrokeX.length > 1) {
-                        inkData.push([currentStrokeX, currentStrokeY, currentStrokeT]);
-                    }
-
-                    if (e && (e.pointerType === 'touch' || e.pointerType === 'pen')) {
-                        try {
-                            canvas.releasePointerCapture(e.pointerId);
-                        } catch(err) {}
-                    }
-                }
-            };
-
-            // Modern PointerEvents for standard Pen, Touch, and Mouse
-            canvas.addEventListener('pointerdown', start);
-            canvas.addEventListener('pointermove', draw);
-            canvas.addEventListener('pointerup', stop);
-            canvas.addEventListener('pointercancel', stop);
-
-            // 2-finger swipe to erase gesture
-            canvas.addEventListener('touchstart', (e) => {
-                if (isPadLocked) return;
-                if (e.touches.length > 1) {
-                    twoFingerErasing = true;
-                    if (!drawing) {
-                        saveState();
-                        drawing = true;
-                    }
-                    const rect = canvas.getBoundingClientRect();
-                    const x = (((e.touches[0].clientX + e.touches[1].clientX) / 2) - rect.left) * (canvas.width / rect.width);
-                    const y = (((e.touches[0].clientY + e.touches[1].clientY) / 2) - rect.top) * (canvas.height / rect.height);
-                    ctx.beginPath();
-                    ctx.moveTo(x, y);
-                }
-            }, { passive: false });
-
-            canvas.addEventListener('touchmove', (e) => {
-                if (isPadLocked) return;
-                if (e.touches.length > 1 && drawing) {
-                    e.preventDefault(); 
-                    const rect = canvas.getBoundingClientRect();
-                    const x = (((e.touches[0].clientX + e.touches[1].clientX) / 2) - rect.left) * (canvas.width / rect.width);
-                    const y = (((e.touches[0].clientY + e.touches[1].clientY) / 2) - rect.top) * (canvas.height / rect.height);
-                    
-                    ctx.globalCompositeOperation = 'destination-out';
-                    ctx.lineWidth = 40; 
-                    ctx.lineTo(x, y);
-                    ctx.stroke();
-                }
-            }, { passive: false });
-
-            canvas.addEventListener('touchend', (e) => {
-                if (e.touches.length === 0) {
-                    stop();
-                }
-            });
-        }
-
-        // Handle stylus tool switching
-        function setTool(tool) {
-            activeTool = tool;
-            document.getElementById('tool-pen').className = `px-2 py-0.5 rounded text-[8.5px] font-bold ${tool === 'pen' ? 'bg-amber-800 text-white shadow-sm' : 'hover:bg-white text-gray-600'}`;
-            document.getElementById('tool-eraser').className = `px-2 py-0.5 rounded text-[8.5px] font-bold ${tool === 'eraser' ? 'bg-amber-800 text-white shadow-sm' : 'hover:bg-white text-gray-600'}`;
-        }
-
-        // Undo / Redo mechanics
-        function saveState() {
-            if (undoStack.length >= maxStates) {
-                undoStack.shift();
-            }
-            undoStack.push(canvas.toDataURL());
-            redoStack = []; 
-        }
-
-        function undo() {
-            if (undoStack.length > 0) {
-                let current = canvas.toDataURL();
-                redoStack.push(current);
-                let previous = undoStack.pop();
-                restoreCanvas(previous);
-            }
-        }
-
-        function redo() {
-            if (redoStack.length > 0) {
-                let next = redoStack.pop();
-                undoStack.push(canvas.toDataURL());
-                restoreCanvas(next);
-            }
-        }
-
-        function restoreCanvas(dataUrl) {
-            let img = new Image();
-            img.onload = () => {
-                ctx.clearRect(0, 0, canvas.width, canvas.height);
-                ctx.drawImage(img, 0, 0);
-            };
-            img.src = dataUrl;
-        }
-
-        function handleCanvasResize() {
-            if (!canvas) return;
-            const tempCopy = canvas.toDataURL(); 
-
-            canvas.width = canvas.parentElement.offsetWidth;
-            canvas.height = canvas.parentElement.offsetHeight;
-            
-            ctx.lineWidth = 2.5;
-            ctx.lineCap = 'round';
-            ctx.strokeStyle = '#0f172a';
-
-            // Redraw active lists if not in handwriting recognition mode
-            if (activeFieldId === null && selectedGarments.size > 0) {
-                drawLabelsOnPad();
-            }
-
-            const img = new Image();
-            img.onload = () => {
-                ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-            };
-            img.src = tempCopy;
-        }
-
-        function clearCanvas() {
-            saveState(); 
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            inkData = []; // Clear HWR stroke logs as well
-
-            // Re-render template titles ONLY if active handwriting field is empty/null
-            if (activeFieldId === null && selectedGarments.size > 0) {
-                drawLabelsOnPad();
-            }
-        }
-
-        // START MEASURING ACTION (Renders template labels matching design)
-        function goToMeasurements() {
-            // Cancel customer fields selection if active
-            deactivateField();
-
-            if (selectedGarments.size === 0) {
-                showToast("Please select at least one garment from the top bar!");
-                return;
-            }
-            clearCanvas();
-            drawLabelsOnPad();
-        }
-
-        // Draw Stylus guidelines directly onto yellow board
-        function drawLabelsOnPad() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            ctx.save();
-            ctx.font = "bold 15px 'Courier New', monospace";
-            ctx.fillStyle = '#1e293b';
-            
-            let currentY = 55;
-            selectedGarments.forEach(item => {
-                const label = item.toLowerCase() + ":";
-                ctx.fillText(label, 25, currentY);
-
-                // Dotted rule line helper matching real workbook
-                ctx.strokeStyle = '#e2e8f0';
-                ctx.lineWidth = 1;
-                ctx.beginPath();
-                ctx.setLineDash([5, 8]);
-                ctx.moveTo(25, currentY + 12);
-                ctx.lineTo(canvas.width - 25, currentY + 12);
-                ctx.stroke();
-
-                currentY += 135; // Spacing to allow physical stylus writing
-            });
-            ctx.restore();
-        }
-
         function initChart() {
-            const ctxChart = document.getElementById('priceChart').getContext('2d');
-            chartInstance = new Chart(ctxChart, {
-                type: 'doughnut',
-                data: {
-                    labels: garments,
-                    datasets: [{
-                        data: garments.map(g => prices[g]),
-                        backgroundColor: ['#78350f', '#92400e', '#b45309', '#d97706', '#f59e0b', '#fbbf24', '#fcd34d', '#fef3c7']
-                    }]
-                },
-                options: { 
-                    maintainAspectRatio: false, 
-                    plugins: { 
-                        legend: { 
-                            position: 'bottom', 
-                            labels: { boxWidth: 8, font: { size: 8 } } 
-                        } 
-                    } 
-                }
-            });
+            try {
+                const ctxChart = document.getElementById('priceChart').getContext('2d');
+                chartInstance = new Chart(ctxChart, { type: 'doughnut', data: { labels: garments, datasets: [{ data: garments.map(g => prices[g]), backgroundColor: ['#78350f', '#92400e', '#b45309', '#d97706', '#f59e0b', '#fbbf24', '#fcd34d', '#fef3c7'] }] }, options: { maintainAspectRatio: false } });
+            } catch(e) {
+                console.warn("Chart initialized failed (normal if CDN blocked):", e);
+            }
         }
 
         function updateChart() {
@@ -1087,90 +793,97 @@
             }
         }
 
-        // Custom Message Toast
-        function showToast(msg) {
-            const toast = document.createElement("div");
-            toast.className = "fixed bottom-5 left-1/2 -translate-x-1/2 bg-amber-900 text-white font-bold text-[10px] py-2 px-5 rounded-full shadow-lg z-[9999] transition-all duration-300";
-            toast.innerText = msg;
-            document.body.appendChild(toast);
-            setTimeout(() => {
-                toast.classList.add("opacity-0");
-                setTimeout(() => toast.remove(), 300);
-            }, 3500);
+        function saveState() { 
+            undoStack.push(canvas.toDataURL()); 
+            if(undoStack.length > maxStates) undoStack.shift();
+            redoStack = []; 
         }
-
-        // Preview Bill Invoice
-        function previewInvoice() {
-            document.getElementById('inv-cust-name').innerText = document.getElementById('custName').value || "Walk-In Customer";
-            document.getElementById('inv-cust-mobile').innerText = document.getElementById('custMobile').value || "None";
-            document.getElementById('inv-cust-address').innerText = document.getElementById('custAddress').value || "None";
-            document.getElementById('inv-bill-no').innerText = `#SAT-${billNumber}`;
-
-            const now = new Date();
-            document.getElementById('bill-date-time').innerText = `Date: ${now.toLocaleDateString()} Time: ${now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}`;
-
-            const tbody = document.getElementById('inv-items-body');
-            tbody.innerHTML = '';
-            let totalAmount = 0;
-
-            selectedGarments.forEach(item => {
-                const qty = quantities[item] || 0;
-                if(qty > 0) {
-                    const rate = prices[item];
-                    const amt = qty * rate;
-                    totalAmount += amt;
-
-                    tbody.innerHTML += `
-                        <tr class="border-b border-gray-100">
-                            <td class="py-1.5 font-bold text-gray-800 text-[10px]">${item}</td>
-                            <td class="py-1.5 text-center font-mono text-[10px]">${qty}</td>
-                            <td class="py-1.5 text-right font-mono text-[10px]">₹${rate}</td>
-                            <td class="py-1.5 text-right font-bold text-amber-900 font-mono text-[10px]">₹${amt}</td>
-                        </tr>
-                    `;
+        
+        function undo() { 
+            if (undoStack.length > 0) { 
+                redoStack.push(canvas.toDataURL()); 
+                restoreCanvas(undoStack.pop()); 
+            } 
+        }
+        
+        function redo() { 
+            if (redoStack.length > 0) { 
+                undoStack.push(canvas.toDataURL()); 
+                restoreCanvas(redoStack.pop()); 
+            } 
+        }
+        
+        function restoreCanvas(dataUrl) { 
+            let img = new Image(); 
+            img.onload = () => { 
+                ctx.clearRect(0,0,canvas.width,canvas.height); 
+                ctx.globalCompositeOperation = 'source-over';
+                ctx.drawImage(img,0,0); 
+            }; 
+            img.src = dataUrl; 
+        }
+        
+        function handleCanvasResize() { 
+            if (!canvas) return; 
+            const temp = canvas.toDataURL();
+            canvas.width = canvas.parentElement.clientWidth; 
+            restoreCanvas(temp);
+            if (selectedGarments.size > 0 && activeFieldId === null) drawLabelsOnPad();
+        }
+        
+        function setTool(tool) { 
+            activeTool = tool; 
+            ['pen', 'eraser', 'pan'].forEach(t => {
+                const el = document.getElementById('tool-' + t);
+                if (el) {
+                    if (t === tool) {
+                        el.classList.add('bg-amber-800', 'text-white');
+                        el.classList.remove('hover:bg-white', 'text-gray-600');
+                    } else {
+                        el.classList.remove('bg-amber-800', 'text-white');
+                        el.classList.add('hover:bg-white', 'text-gray-600');
+                    }
                 }
             });
+            canvas.style.cursor = tool === 'pan' ? 'grab' : 'crosshair';
+        }
+        
+        function convertScribbleToText() { deactivateField(); }
+        
+        function previewInvoice() { 
+            document.getElementById('inv-cust-name').innerText = document.getElementById('custName').value || 'Walk-in Customer';
+            document.getElementById('inv-cust-mobile').innerText = document.getElementById('custMobile').value || 'N/A';
+            document.getElementById('inv-cust-address').innerText = document.getElementById('custAddress').value || 'N/A';
+            
+            const now = new Date();
+            document.getElementById('bill-date-time').innerText = `Date: ${now.toLocaleDateString()} Time: ${now.toLocaleTimeString()}`;
+            document.getElementById('inv-bill-no').innerText = `#SAT-${billNumber++}`;
 
-            tbody.innerHTML += `
-                <tr class="font-bold text-[10px] text-amber-900">
-                    <td colspan="3" class="pt-3 text-right">Grand Total:</td>
-                    <td class="pt-3 text-right font-mono text-xs">₹${totalAmount}</td>
+            let total = 0;
+            const itemsHtml = garments.filter(g => quantities[g] > 0).map(g => {
+                const itemTotal = quantities[g] * prices[g];
+                total += itemTotal;
+                return `<tr>
+                    <td class="py-1">${g}</td>
+                    <td class="py-1 text-center">${quantities[g]}</td>
+                    <td class="py-1 text-right">${prices[g]}</td>
+                    <td class="py-1 text-right text-amber-900 font-bold">${itemTotal}</td>
+                </tr>`;
+            }).join('');
+            
+            document.getElementById('inv-items-body').innerHTML = itemsHtml + `
+                <tr class="border-t-2 border-gray-300 font-extrabold text-sm text-gray-900">
+                    <td colspan="3" class="pt-2 text-right">Grand Total:</td>
+                    <td class="pt-2 text-right">₹${total}</td>
                 </tr>
             `;
 
-            const imgData = canvas.toDataURL();
-            document.getElementById('inv-drawing-img').src = imgData;
-
-            document.getElementById('invoice-modal').classList.remove('hidden');
+            document.getElementById('inv-drawing-img').src = canvas.toDataURL();
+            document.getElementById('invoice-modal').classList.remove('hidden'); 
         }
-
-        function closeInvoiceModal() {
-            document.getElementById('invoice-modal').classList.add('hidden');
-        }
-
-        function printBillInvoice() {
-            window.print();
-            
-            billNumber += 1;
-            
-            // Reset state
-            document.getElementById('custName').value = '';
-            document.getElementById('custMobile').value = '';
-            document.getElementById('custAddress').value = '';
-            
-            selectedGarments.clear();
-            garments.forEach(g => quantities[g] = 0);
-            
-            undoStack = [];
-            redoStack = [];
-            inkData = [];
-            
-            renderGarments();
-            clearCanvas();
-            closeInvoiceModal();
-            deactivateField();
-            showToast("Bill Invoice printed and cleared successfully!");
-        }
+        
+        function closeInvoiceModal() { document.getElementById('invoice-modal').classList.add('hidden'); }
+        function printBillInvoice() { window.print(); closeInvoiceModal(); }
     </script>
 </body>
 </html>
